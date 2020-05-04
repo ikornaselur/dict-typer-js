@@ -1,20 +1,42 @@
-import {subMembersToImports} from './utils';
+import {subMembersToImports, subMembersToString} from './utils';
 import {MemberEntry} from './models';
 
-test('subMembersToImports gets imports from members', () => {
-  const subMembers = [new MemberEntry('List', []), new MemberEntry('List', [])];
+describe('subMembersToImports', () => {
+  test('gets imports from members', () => {
+    const subMembers = [new MemberEntry('List', []), new MemberEntry('List', [])];
 
-  expect(subMembersToImports(subMembers)).toEqual(new Set(['List']));
+    expect(subMembersToImports(subMembers)).toEqual(new Set(['List']));
+  });
+
+  test('gets adds Union if multiple imports', () => {
+    const subMembers = [new MemberEntry('List', []), new MemberEntry('Dict', [])];
+
+    expect(subMembersToImports(subMembers)).toEqual(new Set(['List', 'Dict', 'Union']));
+  });
+
+  test('gets adds Optional if one of two imports is None', () => {
+    const subMembers = [new MemberEntry('List', []), new MemberEntry('None', [])];
+
+    expect(subMembersToImports(subMembers)).toEqual(new Set(['List', 'Optional']));
+  });
 });
 
-test('subMembersToImports gets adds Union if multiple imports', () => {
-  const subMembers = [new MemberEntry('List', []), new MemberEntry('Dict', [])];
+describe('subMembersToString', () => {
+  test('gets the value of only member if just one', () => {
+    const subMembers = [new MemberEntry('str', [])];
 
-  expect(subMembersToImports(subMembers)).toEqual(new Set(['List', 'Dict', 'Union']));
-});
+    expect(subMembersToString(subMembers)).toBe('str');
+  });
 
-test('subMembersToImports gets adds Optional if one of two imports is None', () => {
-  const subMembers = [new MemberEntry('List', []), new MemberEntry('None', [])];
+  test('gets value as optional if one of two is None', () => {
+    const subMembers = [new MemberEntry('str', []), new MemberEntry('None', [])];
 
-  expect(subMembersToImports(subMembers)).toEqual(new Set(['List', 'Optional']));
+    expect(subMembersToString(subMembers)).toBe('Optional[str]');
+  });
+
+  test('gets union of values if multiple', () => {
+    const subMembers = [new MemberEntry('str', []), new MemberEntry('int', [])];
+
+    expect(subMembersToString(subMembers)).toBe('Union[int, str]');
+  });
 });

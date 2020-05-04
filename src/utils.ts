@@ -18,8 +18,20 @@ export const subMembersToImports = (subMembers: MemberEntry[]): Set<string> => {
   return imports;
 };
 
-/*
-export const subMembersToString = (subMembers: MemberEntry[]): Set<string> => {
-  return new Set();
+export const subMembersToString = (subMembers: MemberEntry[]): string => {
+  if (
+    subMembers.length === 2 &&
+    subMembers.map(member => member.name).some(name => name === 'None')
+  ) {
+    const optionalMember = subMembers.map(member => member.name).find(name => name !== 'None');
+    return `Optional[${optionalMember.toString()}]`;
+  }
+  if (subMembers.length === 1) {
+    return subMembers[0].toString();
+  }
+  if (subMembers.length > 0) {
+    const names = subMembers.map(member => member.name).sort();
+    return `Union[${names.join(', ')}]`;
+  }
+  return '';
 };
-*/

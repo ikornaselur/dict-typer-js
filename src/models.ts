@@ -1,3 +1,4 @@
+import {subMembersToString} from './utils';
 const KNOWN_TYPE_IMPORTS: string[] = ['List', 'Tuple', 'Set', 'FrozenSet', 'Dict'];
 
 export class MemberEntry {
@@ -17,5 +18,14 @@ export class MemberEntry {
     }
 
     return imports;
+  }
+
+  toString(): string {
+    const subString = subMembersToString(this.#subMembers);
+    if (subString) {
+      return `${this.name}[${subString}]`;
+    }
+
+    return this.name;
   }
 }
