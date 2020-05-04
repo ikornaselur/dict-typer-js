@@ -1,10 +1,59 @@
 import {MemberEntry} from './models';
 
 describe('MemberEntry', () => {
-  test('returns itself with imports if known type import', () => {
-    expect(new MemberEntry('List', []).getImports()).toEqual(new Set(['List']));
-    expect(new MemberEntry('Tuple', []).getImports()).toEqual(new Set(['Tuple']));
-    expect(new MemberEntry('Dict', []).getImports()).toEqual(new Set(['Dict']));
+  test('toString has base output', () => {
+    // test_member_entry_base_output
+    const entry = new MemberEntry('str');
+
+    expect(entry.toString()).toBe('str');
+  });
+
+  test('toString has sub types', () => {
+    // test_member_entry_sub_types
+    const entry = new MemberEntry('List', [new MemberEntry('str')]);
+
+    expect(entry.toString()).toBe('List[str]');
+  });
+
+  test('toString sub types with union', () => {
+    // test_member_entry_sub_types_union
+    const entry = new MemberEntry('List', [new MemberEntry('str'), new MemberEntry('int')]);
+
+    expect(entry.toString()).toBe('List[Union[int, str]]');
+  });
+
+  test('toString sub types optional if just one type', () => {
+    // test_member_entry_sub_types_optional_if_just_one_type
+    const entry = new MemberEntry('List', [new MemberEntry('str'), new MemberEntry('None')]);
+
+    expect(entry.toString()).toBe('List[Optional[str]]');
+  });
+
+  test('toString sub types union instead of optional if multiple types', () => {
+    // test_member_entry_sub_types_union_instead_of_optional_if_multiple_types
+    const entry = new MemberEntry('List', [
+      new MemberEntry('str'),
+      new MemberEntry('int'),
+      new MemberEntry('None'),
+    ]);
+
+    expect(entry.toString()).toBe('List[Union[None, int, str]]');
+  });
+
+  test('returns correct imports', () => {
+    // test_member_entry_get_imports
+    const justList = new MemberEntry('List');
+    const justListOneItem = new MemberEntry('List', [new MemberEntry('str')]);
+    const listWithUnion = new MemberEntry('List', [new MemberEntry('str'), new MemberEntry('int')]);
+    const listWithOptional = new MemberEntry('List', [
+      new MemberEntry('str'),
+      new MemberEntry('None'),
+    ]);
+
+    expect(justList.getImports()).toEqual(new Set(['List']));
+    expect(justListOneItem.getImports()).toEqual(new Set(['List']));
+    expect(listWithUnion.getImports()).toEqual(new Set(['List', 'Union']));
+    expect(listWithOptional.getImports()).toEqual(new Set(['List', 'Optional']));
   });
 
   test("doesn't return itself with imports if unknown type import", () => {
@@ -12,15 +61,25 @@ describe('MemberEntry', () => {
     expect(new MemberEntry('Bar', []).getImports()).toEqual(new Set([]));
   });
 
-  test('toString has base output', () => {
-    const entry = new MemberEntry('str');
+  test('get imports from sub members', () => {
+    // test_member_entry_get_imports_from_sub_members
+    /*
+    sub_entry = DictEntry(
+        "NestedType",
+        members={
+            "foo": {
+                MemberEntry(
+                    "List", sub_members={MemberEntry("int"), MemberEntry("str")}
+                )
+            }
+        },
+    )
+    entry = MemberEntry(
+        "List",
+        sub_members={sub_entry, MemberEntry("Set", sub_members={MemberEntry("int")})},
+    )
 
-    expect(entry.toString()).toBe('str');
-  });
-
-  test('toString has sub types', () => {
-    const entry = new MemberEntry('List', [new MemberEntry('str')]);
-
-    expect(entry.toString()).toBe('List[str]');
+    assert entry.get_imports() == {"List", "Union", "Set"}
+     */
   });
 });
