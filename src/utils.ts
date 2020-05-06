@@ -1,6 +1,6 @@
-import {MemberEntry} from './models';
+import {SubMembers} from './types';
 
-export const subMembersToImports = (subMembers: MemberEntry[]): Set<string> => {
+export const subMembersToImports = (subMembers: SubMembers): Set<string> => {
   let imports: Set<string> = new Set();
 
   subMembers.forEach(member => {
@@ -18,7 +18,7 @@ export const subMembersToImports = (subMembers: MemberEntry[]): Set<string> => {
   return imports;
 };
 
-export const subMembersToString = (subMembers: MemberEntry[]): string => {
+export const subMembersToString = (subMembers: SubMembers): string => {
   if (
     subMembers.length === 2 &&
     subMembers.map(member => member.name).some(name => name === 'None')

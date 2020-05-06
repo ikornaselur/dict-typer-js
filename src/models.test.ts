@@ -1,4 +1,4 @@
-import {MemberEntry} from './models';
+import {DictEntry, MemberEntry} from './models';
 
 describe('MemberEntry', () => {
   test('toString has base output', () => {
@@ -82,4 +82,37 @@ describe('MemberEntry', () => {
     assert entry.get_imports() == {"List", "Union", "Set"}
      */
   });
+});
+
+describe('DictEntry', () => {
+  test('toString has base output', () => {
+    // test_dict_entry_base_output
+    const entry = new DictEntry('RootType', {
+      foo: [new MemberEntry('str')],
+      bar: [new MemberEntry('int')],
+    });
+
+    // prettier-ignore
+    expect(entry.toString()).toBe(
+      [
+        'class RootType(TypedDict):',
+        '    foo: str',
+        '    bar: int'
+      ].join('\n'),
+    );
+  });
+
+  /*
+    entry = DictEntry(
+        "RootType", members={"foo": {MemberEntry("str")}, "bar": {MemberEntry("int")}}
+    )
+
+    # fmt: off
+    assert str(entry) == "\n".join([
+        "class RootType(TypedDict):",
+        "    foo: str",
+        "    bar: int",
+    ])
+    # fmt: on
+   */
 });
