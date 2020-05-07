@@ -7,7 +7,9 @@
   "author": "Axel <dict.typer@absalon.is>",
   "license": "MIT",
   "scripts": {
-    "test": "jest"
+    "test": "jest --verbose",
+    "testw": "jest --verbose --watch",
+    "lint": "eslint src/*"
   },
   "devDependencies": {
     "@types/jest": "^25.2.1",
