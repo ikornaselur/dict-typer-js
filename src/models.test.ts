@@ -102,17 +102,19 @@ describe('DictEntry', () => {
     );
   });
 
-  /*
-    entry = DictEntry(
-        "RootType", members={"foo": {MemberEntry("str")}, "bar": {MemberEntry("int")}}
-    )
+  test('nested dicts', () => {
+    // test_dict_entry_nested_dicts
+    const subEntry = new DictEntry('NestedType', {
+      foo: [new MemberEntry('List', [new MemberEntry('int'), new MemberEntry('str')])],
+    });
+    const entry = new DictEntry('RootType', {sub: [subEntry]});
 
-    # fmt: off
-    assert str(entry) == "\n".join([
-        "class RootType(TypedDict):",
-        "    foo: str",
-        "    bar: int",
-    ])
-    # fmt: on
-   */
+    // prettier-ignore
+    expect(entry.toString()).toBe(
+      [
+        'class RootType(TypedDict):',
+        '    sub: NestedType',
+      ].join('\n'),
+    );
+  });
 });

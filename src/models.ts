@@ -59,11 +59,7 @@ export class DictEntry {
       out.push(`class ${this.name}(TypedDict):`);
       for (const key in this.#members) {
         const value = this.#members[key];
-        if (value instanceof DictEntry) {
-          out.push(`${' '.repeat(this.#indentation)}${key}: ${value.name}`);
-        } else {
-          out.push(`${' '.repeat(this.#indentation)}${key}: ${subMembersToString(value)}`);
-        }
+        out.push(`${' '.repeat(this.#indentation)}${key}: ${subMembersToString(value)}`);
       }
     }
     return out.join('\n');
