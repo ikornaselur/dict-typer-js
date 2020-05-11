@@ -1,5 +1,5 @@
 import {subMembersToString, subMembersToImports} from './utils';
-import {SubMembers, DictMembers} from './types';
+import {SubMembers, DictMembers, EntryType} from './types';
 
 const KNOWN_TYPE_IMPORTS: string[] = ['List', 'Tuple', 'Set', 'FrozenSet', 'Dict'];
 
@@ -31,6 +31,10 @@ export class MemberEntry {
     }
 
     return this.name;
+  }
+
+  get dependsOn(): Set<string> {
+    return new Set(this.#subMembers.map(subMember => subMember.name));
   }
 }
 
@@ -72,4 +76,29 @@ export class DictEntry {
     }
     return out.join('\n');
   }
+
+  get dependsOn(): Set<string> {
+    if (Object.keys(this.#members).length === 0) {
+      return new Set([]);
+    }
+    const membersDepends = Object.values(this.#members)
+      .flat()
+      .map(member => member.dependsOn)
+      .reduce((prev, curr) => prev.concat([...curr]), []);
+    const memberNames = Object.values(this.#members)
+      .flat()
+      .map(member => member.name);
+
+    return new Set([...membersDepends, ...memberNames]);
+  }
 }
+
+export const memberSort = (left: EntryType, right: EntryType): number => {
+  if (left.dependsOn.has(right.name)) {
+    return 1;
+  }
+  if (right.dependsOn.has(left.name)) {
+    return -1;
+  }
+  return 0;
+};

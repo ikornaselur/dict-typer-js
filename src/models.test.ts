@@ -1,4 +1,4 @@
-import {DictEntry, MemberEntry} from './models';
+import {DictEntry, MemberEntry, memberSort} from './models';
 
 describe('MemberEntry', () => {
   test('toString has base output', () => {
@@ -81,6 +81,17 @@ describe('MemberEntry', () => {
 
     expect(entry.toString()).toBe('List[SubType]');
   });
+
+  test('sorting based on dependency', () => {
+    // test_sorting_member_entries_based_on_dependency
+    const foo = new MemberEntry('Foo');
+    const bar = new MemberEntry('Bar', [foo]);
+    const baz = new MemberEntry('Baz', [bar]);
+
+    expect([foo, bar, baz].sort(memberSort)).toEqual([foo, bar, baz]);
+    expect([bar, foo, baz].sort(memberSort)).toEqual([foo, bar, baz]);
+    expect([baz, bar, foo].sort(memberSort)).toEqual([foo, bar, baz]);
+  });
 });
 
 describe('DictEntry', () => {
@@ -145,5 +156,30 @@ describe('DictEntry', () => {
     const entry = new DictEntry('Root', {sub: [subEntry]});
 
     expect(entry.getImports()).toEqual(new Set(['List', 'Union']));
+  });
+
+  test('sorting based on dependency', () => {
+    // test_sorting_dict_entry_based_on_dependency
+    const foo = new MemberEntry('Foo');
+    const bar = new MemberEntry('Bar', [foo]);
+    const baz = new MemberEntry('int');
+
+    const entry = new DictEntry('Root', {foo: [foo], bar: [bar], baz: [baz]});
+
+    expect([foo, baz, entry, bar].sort(memberSort)).toEqual([foo, baz, bar, entry]);
+  });
+
+  test('sorting within sub entry', () => {
+    // test_sorting_dict_entry_with_sub_entry
+    const subEntry = new DictEntry('Nested', {
+      foo: [new MemberEntry('List', [new MemberEntry('int'), new MemberEntry('str')])],
+    });
+    const entry = new DictEntry('Root', {sub: [subEntry]});
+
+    expect(entry.dependsOn.has(subEntry.name)).toBeTruthy();
+    expect(subEntry.dependsOn.has(entry.name)).toBeFalsy();
+
+    expect([entry, subEntry].sort(memberSort)).toEqual([subEntry, entry]);
+    expect([subEntry, entry].sort(memberSort)).toEqual([subEntry, entry]);
   });
 });
