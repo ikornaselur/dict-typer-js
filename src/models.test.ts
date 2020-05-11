@@ -56,6 +56,19 @@ describe('MemberEntry', () => {
     expect(listWithOptional.getImports()).toEqual(new Set(['List', 'Optional']));
   });
 
+  test('returns correct imports from sub members', () => {
+    // test_member_entry_get_imports_from_sub_members
+    const subEntry = new DictEntry('Nested', {
+      foo: [new MemberEntry('List', [new MemberEntry('int'), new MemberEntry('str')])],
+    });
+    const entry = new MemberEntry('List', [
+      subEntry,
+      new MemberEntry('Set', [new MemberEntry('int')]),
+    ]);
+
+    expect(entry.getImports()).toEqual(new Set(['List', 'Union', 'Set']));
+  });
+
   test("doesn't return itself with imports if unknown type import", () => {
     expect(new MemberEntry('Foo', []).getImports()).toEqual(new Set([]));
     expect(new MemberEntry('Bar', []).getImports()).toEqual(new Set([]));
@@ -122,5 +135,15 @@ describe('DictEntry', () => {
 
     expect(baseEntry.getImports()).toEqual(new Set([]));
     expect(baseEntryWithList.getImports()).toEqual(new Set(['List', 'Union']));
+  });
+
+  test('returns correct imports with sub members', () => {
+    // test_dict_entry_get_imports_from_sub_members
+    const subEntry = new DictEntry('Nested', {
+      foo: [new MemberEntry('List', [new MemberEntry('int'), new MemberEntry('str')])],
+    });
+    const entry = new DictEntry('Root', {sub: [subEntry]});
+
+    expect(entry.getImports()).toEqual(new Set(['List', 'Union']));
   });
 });
