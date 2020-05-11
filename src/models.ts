@@ -1,7 +1,14 @@
-import {subMembersToString, subMembersToImports} from './utils';
+import {subMembersToString, subMembersToImports, isValidKey} from './utils';
 import {SubMembers, DictMembers, EntryType} from './types';
 
 const KNOWN_TYPE_IMPORTS: string[] = ['List', 'Tuple', 'Set', 'FrozenSet', 'Dict'];
+
+const isValidName = (name: string): boolean => {
+  if (!isValidKey(name)) {
+    return false;
+  }
+  return KNOWN_TYPE_IMPORTS.indexOf(name) === -1;
+};
 
 export class MemberEntry {
   name: string;
@@ -44,8 +51,12 @@ export class DictEntry {
   #indentation: number;
   #forceAlternative: boolean;
 
-  constructor(name: string, members: DictMembers = {}, indentation = 4, forceAlternative = false) {
-    this.name = name;
+  constructor(name: string, members: DictMembers = {}, forceAlternative = false, indentation = 4) {
+    if (isValidName(name)) {
+      this.name = name;
+    } else {
+      this.name = `${name}_`;
+    }
     this.#members = members;
     this.#indentation = indentation;
     this.#forceAlternative = forceAlternative;
@@ -66,11 +77,14 @@ export class DictEntry {
   toString(): string {
     const out: string[] = [];
     if (this.#forceAlternative) {
-      //
+      out.push(`${this.name} = TypedDict("${this.name}", {`);
+      for (const [key, value] of Object.entries(this.#members)) {
+        out.push(`${' '.repeat(this.#indentation)}"${key}": ${subMembersToString(value)},`);
+      }
+      out.push('})');
     } else {
       out.push(`class ${this.name}(TypedDict):`);
-      for (const key in this.#members) {
-        const value = this.#members[key];
+      for (const [key, value] of Object.entries(this.#members)) {
         out.push(`${' '.repeat(this.#indentation)}${key}: ${subMembersToString(value)}`);
       }
     }

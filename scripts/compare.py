@@ -47,7 +47,7 @@ def run() -> None:
         file_colour = "green"
         for py_test_name in py_test_names:
             if py_test_name in IGNORED:
-                to_output.append({"message": f"[*]  |  {py_test_name}", "fg": "yellow"})
+                to_output.append({"message": f" |  {py_test_name}", "fg": "yellow"})
                 if file_colour == "green":
                     file_colour = "yellow"
                 continue
@@ -59,17 +59,17 @@ def run() -> None:
                         break
             if covered_by is None:
                 file_colour = "red"
-                to_output.append({"message": f"[*]  |  {py_test_name}", "fg": "red"})
+                to_output.append({"message": f" |  {py_test_name}", "fg": "red"})
             else:
-                to_output.append({"message": f"[*]  |  {py_test_name}", "fg": "green"})
+                to_output.append({"message": f" |  {py_test_name}", "fg": "green"})
                 to_output.append(
                     {
-                        "message": f"[*]  |  |  {covered_by[0]}:'{covered_by[1]}'",
+                        "message": f" |  |  {covered_by[0]}:'{covered_by[1]}'",
                         "fg": "green",
                     }
                 )
 
-        click.secho(f"[*] {py_test_file}", fg=file_colour)
+        click.secho(f"{py_test_file}", fg=file_colour)
         for output in to_output:
             click.secho(**output)  # type: ignore
 

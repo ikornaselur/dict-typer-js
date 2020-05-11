@@ -182,4 +182,32 @@ describe('DictEntry', () => {
     expect([entry, subEntry].sort(memberSort)).toEqual([subEntry, entry]);
     expect([subEntry, entry].sort(memberSort)).toEqual([subEntry, entry]);
   });
+
+  test('invalid name adds underscore', () => {
+    // test_dict_entry_invalid_name_adds_underscore
+    expect(new DictEntry('List').name).toEqual('List_');
+    expect(new DictEntry('None').name).toEqual('None_');
+  });
+
+  test('alternative output', () => {
+    // test_dict_entry_alternative_output
+    const entry = new DictEntry(
+      'Root',
+      {
+        foo: [new MemberEntry('str')],
+        bar: [new MemberEntry('int')],
+      },
+      true,
+    );
+
+    // prettier-ignore
+    expect(entry.toString()).toBe(
+      [
+        'Root = TypedDict("Root", {',
+        '    "foo": str,',
+        '    "bar": int,',
+        '})',
+      ].join('\n'),
+    );
+  });
 });

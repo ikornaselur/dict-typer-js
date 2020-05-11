@@ -43,3 +43,59 @@ export const subMembersToString = (subMembers: SubMembers): string => {
   }
   return '';
 };
+
+const pythonKeywords = [
+  'False',
+  'None',
+  'True',
+  'and',
+  'as',
+  'assert',
+  'async',
+  'await',
+  'break',
+  'class',
+  'continue',
+  'def',
+  'del',
+  'elif',
+  'else',
+  'except',
+  'finally',
+  'for',
+  'from',
+  'global',
+  'if',
+  'import',
+  'in',
+  'is',
+  'lambda',
+  'nonlocal',
+  'not',
+  'or',
+  'pass',
+  'raise',
+  'return',
+  'try',
+  'while',
+  'with',
+  'yield',
+];
+
+const isKeyWord = (key: string): boolean => {
+  return pythonKeywords.indexOf(key) > -1;
+};
+
+const isIdentifier = (key: string): boolean => {
+  // A custom implementation of "".isidentifier() in Python. Likely not as
+  // robust, but will be good enough
+  const identifierRegex = new RegExp(/^[a-z_][a-z0-9_]*$/, 'i');
+  return identifierRegex.test(key);
+};
+
+export const isValidKey = (key: string): boolean => {
+  if (isKeyWord(key)) {
+    return false;
+  }
+  return isIdentifier(key);
+};
