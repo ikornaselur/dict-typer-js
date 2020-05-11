@@ -48,7 +48,15 @@ export class DictEntry {
   }
 
   getImports(): Set<string> {
-    return new Set();
+    if (Object.keys(this.#members).length === 0) {
+      return new Set(['Dict']);
+    }
+
+    return new Set(
+      Object.values(this.#members)
+        .map(sm => subMembersToImports(sm))
+        .reduce((prev, curr) => prev.concat([...curr]), []),
+    );
   }
 
   toString(): string {

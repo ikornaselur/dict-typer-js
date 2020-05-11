@@ -61,33 +61,19 @@ describe('MemberEntry', () => {
     expect(new MemberEntry('Bar', []).getImports()).toEqual(new Set([]));
   });
 
-  test('get imports from sub members', () => {
-    // test_member_entry_get_imports_from_sub_members
-    /*
-    sub_entry = DictEntry(
-        "NestedType",
-        members={
-            "foo": {
-                MemberEntry(
-                    "List", sub_members={MemberEntry("int"), MemberEntry("str")}
-                )
-            }
-        },
-    )
-    entry = MemberEntry(
-        "List",
-        sub_members={sub_entry, MemberEntry("Set", sub_members={MemberEntry("int")})},
-    )
+  test('with DictEntry', () => {
+    // test_member_entry_with_dict_entry
+    const dictEntry = new DictEntry('SubType', {foo: [new MemberEntry('str')]});
+    const entry = new MemberEntry('List', [dictEntry]);
 
-    assert entry.get_imports() == {"List", "Union", "Set"}
-     */
+    expect(entry.toString()).toBe('List[SubType]');
   });
 });
 
 describe('DictEntry', () => {
   test('toString has base output', () => {
     // test_dict_entry_base_output
-    const entry = new DictEntry('RootType', {
+    const entry = new DictEntry('Root', {
       foo: [new MemberEntry('str')],
       bar: [new MemberEntry('int')],
     });
@@ -95,7 +81,7 @@ describe('DictEntry', () => {
     // prettier-ignore
     expect(entry.toString()).toBe(
       [
-        'class RootType(TypedDict):',
+        'class Root(TypedDict):',
         '    foo: str',
         '    bar: int'
       ].join('\n'),
@@ -104,17 +90,37 @@ describe('DictEntry', () => {
 
   test('nested dicts', () => {
     // test_dict_entry_nested_dicts
-    const subEntry = new DictEntry('NestedType', {
+    const subEntry = new DictEntry('Nested', {
       foo: [new MemberEntry('List', [new MemberEntry('int'), new MemberEntry('str')])],
     });
-    const entry = new DictEntry('RootType', {sub: [subEntry]});
+    const entry = new DictEntry('Root', {sub: [subEntry]});
 
     // prettier-ignore
     expect(entry.toString()).toBe(
       [
-        'class RootType(TypedDict):',
-        '    sub: NestedType',
+        'class Root(TypedDict):',
+        '    sub: Nested',
       ].join('\n'),
     );
+  });
+
+  test('with member entry', () => {
+    // test_dict_entry_with_member_entry
+    const dictEntry = new DictEntry('SubType', {foo: [new MemberEntry('str')]});
+    const memberEntry = new MemberEntry('List', [dictEntry]);
+    const entry = new MemberEntry('Set', [memberEntry]);
+
+    expect(entry.toString()).toBe('Set[List[SubType]]');
+  });
+
+  test('returns correct imports', () => {
+    // test_dict_entry_get_imports
+    const baseEntry = new DictEntry('Root', {foo: [new MemberEntry('str')]});
+    const baseEntryWithList = new DictEntry('Root', {
+      bar: [new MemberEntry('List', [new MemberEntry('int'), new MemberEntry('str')])],
+    });
+
+    expect(baseEntry.getImports()).toEqual(new Set([]));
+    expect(baseEntryWithList.getImports()).toEqual(new Set(['List', 'Union']));
   });
 });
