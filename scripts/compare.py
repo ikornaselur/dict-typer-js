@@ -3,7 +3,15 @@ import os
 import re
 from typing import Dict, List
 
-IGNORED = ["test_member_entry_is_hashable_based_on_str_out"]
+IGNORED = [
+    "test_member_entry_is_hashable_based_on_str_out",
+    "test_convert_with_empty_set",
+    "test_convert_with_simple_set",
+    "test_convert_with_mixed_set",
+    "test_convert_with_empty_tuple",
+    "test_convert_with_simple_tuple",
+    "test_convert_with_mixed_tuple",
+]
 
 
 def get_py_tests(path: str) -> Dict[str, List[str]]:

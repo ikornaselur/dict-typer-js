@@ -99,3 +99,25 @@ export const isValidKey = (key: string): boolean => {
   }
   return isIdentifier(key);
 };
+
+export const keyToClassName = (key: string): string => {
+  const parts1 = key.split(/[^a-zA-Z0-9]/);
+
+  const parts2: string[] = [];
+  for (const part of parts1) {
+    if (/^[a-z0-9]+$/.test(part)) {
+      parts2.push(part);
+    } else {
+      // Assume camelCase
+      for (const subPart of part.split(/([A-Z][^A-Z]+)/)) {
+        if (subPart.length > 0) {
+          parts2.push(subPart);
+        }
+      }
+    }
+  }
+
+  return parts2
+    .map(part => `${part.charAt(0).toUpperCase()}${part.substring(1).toLowerCase()}`)
+    .join('');
+};
