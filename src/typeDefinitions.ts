@@ -46,8 +46,6 @@ class DefinitionBuilder {
   }
   private getType(item: any, key: string): EntryType {
     switch (typeof item) {
-      case null:
-        return new MemberEntry('None');
       case 'boolean':
         return new MemberEntry('bool');
       case 'number':
@@ -59,8 +57,30 @@ class DefinitionBuilder {
       case 'string':
         return new MemberEntry('str');
       case 'object':
-        if (Array.isArray(item)) {
-          return new MemberEntry('List'); // TODO: rest
+        if (item === null) {
+          return new MemberEntry('None');
+        } else if (Array.isArray(item)) {
+          const listItemTypes = [];
+          let idx = 0;
+
+          for (const element of item) {
+            const itemType = this.getType(element, `${key}Item${idx}`);
+            if (itemType instanceof DictEntry) {
+              if (
+                [...listItemTypes].map(listItemType => listItemType.members).indexOf(itemType) > -1
+              ) {
+                listItemTypes.push(itemType);
+                idx += 1;
+                if (itemType instanceof DictEntry) {
+                  this.addDefinition(itemType);
+                }
+              }
+            } else if (listItemTypes.find(elm => elm.toString() == itemType.toString()) == null) {
+              listItemTypes.push(itemType);
+            }
+          }
+
+          return new MemberEntry('List', [...listItemTypes]);
         } else if (item.constructor == Object) {
           return new MemberEntry('Dict'); // TODO: rest
         }
