@@ -47,7 +47,7 @@ export class MemberEntry {
 
 export class DictEntry {
   name: string;
-  #members: DictMembers;
+  members: DictMembers;
   #indentation: number;
   #forceAlternative: boolean;
 
@@ -57,18 +57,18 @@ export class DictEntry {
     } else {
       this.name = `${name}_`;
     }
-    this.#members = members;
+    this.members = members;
     this.#indentation = indentation;
     this.#forceAlternative = forceAlternative;
   }
 
   getImports(): Set<string> {
-    if (Object.keys(this.#members).length === 0) {
+    if (Object.keys(this.members).length === 0) {
       return new Set(['Dict']);
     }
 
     return new Set(
-      Object.values(this.#members)
+      Object.values(this.members)
         .map(sm => subMembersToImports(sm))
         .reduce((prev, curr) => prev.concat([...curr]), []),
     );
@@ -78,13 +78,13 @@ export class DictEntry {
     const out: string[] = [];
     if (this.#forceAlternative) {
       out.push(`${this.name} = TypedDict("${this.name}", {`);
-      for (const [key, value] of Object.entries(this.#members)) {
+      for (const [key, value] of Object.entries(this.members)) {
         out.push(`${' '.repeat(this.#indentation)}"${key}": ${subMembersToString(value)},`);
       }
       out.push('})');
     } else {
       out.push(`class ${this.name}(TypedDict):`);
-      for (const [key, value] of Object.entries(this.#members)) {
+      for (const [key, value] of Object.entries(this.members)) {
         out.push(`${' '.repeat(this.#indentation)}${key}: ${subMembersToString(value)}`);
       }
     }
@@ -92,14 +92,14 @@ export class DictEntry {
   }
 
   get dependsOn(): Set<string> {
-    if (Object.keys(this.#members).length === 0) {
+    if (Object.keys(this.members).length === 0) {
       return new Set([]);
     }
-    const membersDepends = Object.values(this.#members)
+    const membersDepends = Object.values(this.members)
       .flat()
       .map(member => member.dependsOn)
       .reduce((prev, curr) => prev.concat([...curr]), []);
-    const memberNames = Object.values(this.#members)
+    const memberNames = Object.values(this.members)
       .flat()
       .map(member => member.name);
 
