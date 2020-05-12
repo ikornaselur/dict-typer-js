@@ -1,5 +1,6 @@
 import {DictEntry, MemberEntry, memberSort} from './models';
 import {Source, BaseSource, EntryType} from './types';
+import {keyToClassName, eqSet} from './utils';
 
 class DefinitionBuilder {
   #definitions: DictEntry[];
@@ -24,6 +25,21 @@ class DefinitionBuilder {
     } else {
       const dictsOnly = this.#definitions.filter(def => def instanceof DictEntry);
       for (const definition of dictsOnly) {
+        if (eqSet(entry.keys, definition.keys)) {
+          console.log('UPDATING MEMBERS');
+          definition.updateMembers(entry.members);
+          return definition;
+        }
+        if (entry.name === definition.name) {
+          let idx = 1;
+          let newName = `${entry.name}${idx}`;
+          const dictsNames = dictsOnly.map(d => d.name);
+          while (dictsNames.indexOf(newName) > -1) {
+            idx += 1;
+            newName = `${entry.name}${idx}`;
+          }
+          entry.name = newName;
+        }
       }
       this.#definitions.push(entry);
     }
@@ -82,7 +98,7 @@ class DefinitionBuilder {
 
           return new MemberEntry('List', [...listItemTypes]);
         } else if (item.constructor == Object) {
-          return new MemberEntry('Dict'); // TODO: rest
+          return this.convertDict(`${keyToClassName(key)}${this.#typePostfix}`, item);
         }
       default:
         throw `Can't getType for ${item}`;
@@ -109,7 +125,7 @@ class DefinitionBuilder {
       let typedDictImport = false;
 
       for (const definition of this.#definitions) {
-        if (definition instanceof DictEntry && Object.keys(definition.members).length > 0) {
+        if (definition instanceof DictEntry) {
           typedDictImport = true;
         }
         typingImports = new Set([...typingImports, ...definition.getImports()]);

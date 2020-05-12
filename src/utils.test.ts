@@ -9,9 +9,9 @@ describe('subMembersToImports', () => {
   });
 
   test('gets adds Union if multiple imports', () => {
-    const subMembers = [new MemberEntry('List', []), new MemberEntry('Dict', [])];
+    const subMembers = [new MemberEntry('List', []), new MemberEntry('str', [])];
 
-    expect(subMembersToImports(subMembers)).toEqual(new Set(['List', 'Dict', 'Union']));
+    expect(subMembersToImports(subMembers)).toEqual(new Set(['List', 'Union']));
   });
 
   test('gets adds Optional if one of two imports is None', () => {
@@ -104,6 +104,7 @@ describe('eqSet', () => {
     expect(eqSet(new Set(['a']), new Set(['a']))).toBeTruthy();
     expect(eqSet(new Set(['a', 'a']), new Set(['a']))).toBeTruthy();
     expect(eqSet(new Set(['a', 'b', 'a']), new Set(['b', 'a']))).toBeTruthy();
+    expect(eqSet(new Set([1, 2]), new Set([2, 1]))).toBeTruthy();
 
     expect(eqSet(new Set(['a', 'a', 'b']), new Set(['a']))).toBeFalsy();
     expect(eqSet(new Set(['a', 'b']), new Set(['a']))).toBeFalsy();

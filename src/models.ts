@@ -1,7 +1,7 @@
-import {subMembersToString, subMembersToImports, isValidKey} from './utils';
+import {subMembersToString, subMembersToImports, isValidKey, eqSet} from './utils';
 import {SubMembers, DictMembers, EntryType} from './types';
 
-const KNOWN_TYPE_IMPORTS: string[] = ['List', 'Tuple', 'Set', 'FrozenSet', 'Dict'];
+const KNOWN_TYPE_IMPORTS: string[] = ['List', 'Tuple', 'Set', 'FrozenSet'];
 
 const isValidName = (name: string): boolean => {
   if (!isValidKey(name)) {
@@ -63,10 +63,6 @@ export class DictEntry {
   }
 
   getImports(): Set<string> {
-    if (Object.keys(this.members).length === 0) {
-      return new Set(['Dict']);
-    }
-
     return new Set(
       Object.values(this.members)
         .map(sm => subMembersToImports(sm))
@@ -77,18 +73,40 @@ export class DictEntry {
   toString(): string {
     const out: string[] = [];
     if (this.#forceAlternative) {
-      out.push(`${this.name} = TypedDict("${this.name}", {`);
-      for (const [key, value] of Object.entries(this.members)) {
-        out.push(`${' '.repeat(this.#indentation)}"${key}": ${subMembersToString(value)},`);
+      if (Object.keys(this.members).length === 0) {
+        out.push(`${this.name} = TypedDict("${this.name}", {})`);
+      } else {
+        out.push(`${this.name} = TypedDict("${this.name}", {`);
+        for (const [key, value] of Object.entries(this.members)) {
+          out.push(`${' '.repeat(this.#indentation)}"${key}": ${subMembersToString(value)},`);
+        }
+        out.push('})');
       }
-      out.push('})');
     } else {
       out.push(`class ${this.name}(TypedDict):`);
-      for (const [key, value] of Object.entries(this.members)) {
-        out.push(`${' '.repeat(this.#indentation)}${key}: ${subMembersToString(value)}`);
+      if (Object.keys(this.members).length === 0) {
+        out.push(`${' '.repeat(this.#indentation)}pass`);
+      } else {
+        for (const [key, value] of Object.entries(this.members)) {
+          out.push(`${' '.repeat(this.#indentation)}${key}: ${subMembersToString(value)}`);
+        }
       }
     }
     return out.join('\n');
+  }
+
+  updateMembers(members: DictMembers): void {
+    if (!eqSet(new Set(Object.keys(members)), this.keys)) {
+      throw "Keys don't match between members";
+    }
+
+    for (const key of Object.keys(this.members)) {
+      console.log(key);
+    }
+  }
+
+  get keys(): Set<string> {
+    return new Set(Object.keys(this.members));
   }
 
   get dependsOn(): Set<string> {
