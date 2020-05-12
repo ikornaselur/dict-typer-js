@@ -121,3 +121,15 @@ export const keyToClassName = (key: string): string => {
     .map(part => `${part.charAt(0).toUpperCase()}${part.substring(1).toLowerCase()}`)
     .join('');
 };
+
+export const eqSet = <T extends string | number>(a: Set<T>, b: Set<T>): boolean => {
+  if (a.size !== b.size) {
+    return false;
+  }
+  for (const elm of a) {
+    if (!b.has(elm)) {
+      return false;
+    }
+  }
+  return true;
+};

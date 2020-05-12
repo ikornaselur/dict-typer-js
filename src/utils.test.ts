@@ -1,4 +1,4 @@
-import {subMembersToImports, subMembersToString, isValidKey, keyToClassName} from './utils';
+import {subMembersToImports, subMembersToString, isValidKey, keyToClassName, eqSet} from './utils';
 import {MemberEntry} from './models';
 
 describe('subMembersToImports', () => {
@@ -95,5 +95,17 @@ describe('keyToClassName', () => {
     // test_key_to_class_name_camel_case_already
     expect(keyToClassName('fooBar')).toBe('FooBar');
     expect(keyToClassName('BazQux')).toBe('BazQux');
+  });
+});
+
+describe('eqSet', () => {
+  test('compares equality of two equal sets', () => {
+    expect(eqSet(new Set([]), new Set([]))).toBeTruthy();
+    expect(eqSet(new Set(['a']), new Set(['a']))).toBeTruthy();
+    expect(eqSet(new Set(['a', 'a']), new Set(['a']))).toBeTruthy();
+    expect(eqSet(new Set(['a', 'b', 'a']), new Set(['b', 'a']))).toBeTruthy();
+
+    expect(eqSet(new Set(['a', 'a', 'b']), new Set(['a']))).toBeFalsy();
+    expect(eqSet(new Set(['a', 'b']), new Set(['a']))).toBeFalsy();
   });
 });
