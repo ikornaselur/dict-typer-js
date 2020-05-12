@@ -12,11 +12,11 @@ const isValidName = (name: string): boolean => {
 
 export class MemberEntry {
   name: string;
-  subMembers: SubMembers;
+  #subMembers: SubMembers;
 
   constructor(name: string, subMembers: SubMembers = []) {
     this.name = name;
-    this.subMembers = subMembers;
+    this.#subMembers = subMembers;
   }
 
   getImports(): Set<string> {
@@ -26,13 +26,13 @@ export class MemberEntry {
       imports.add(this.name);
     }
 
-    const subMemberImports = subMembersToImports(this.subMembers);
+    const subMemberImports = subMembersToImports(this.#subMembers);
 
     return new Set([...imports, ...subMemberImports]);
   }
 
   toString(): string {
-    const subString = subMembersToString(this.subMembers);
+    const subString = subMembersToString(this.#subMembers);
     if (subString) {
       return `${this.name}[${subString}]`;
     }
@@ -40,8 +40,21 @@ export class MemberEntry {
     return this.name;
   }
 
+  addSubMember(member: EntryType): void {
+    if (!this.#subMembers.some(subMember => subMember.equals(member))) {
+      this.#subMembers.push(member);
+    }
+  }
+
   get dependsOn(): Set<string> {
-    return new Set(this.subMembers.map(subMember => subMember.name));
+    return new Set(this.#subMembers.map(subMember => subMember.name));
+  }
+
+  equals(other: EntryType): boolean {
+    if (other instanceof MemberEntry) {
+      return other.toString() === this.toString();
+    }
+    return false;
   }
 }
 
@@ -122,6 +135,19 @@ export class DictEntry {
       .map(member => member.name);
 
     return new Set([...membersDepends, ...memberNames]);
+  }
+
+  equals(other: EntryType): boolean {
+    /* DictEntries are equal if the keys are equal.
+     *
+     * The name and the values of each key don't matter, since the the name is
+     * just for the python type and the values are to know what type the keys
+     * can be, but the keys themselves are the only important thing
+     */
+    if (other instanceof DictEntry) {
+      return [...this.keys].join(';').toString() === [...other.keys].join(';').toString();
+    }
+    return false;
   }
 }
 

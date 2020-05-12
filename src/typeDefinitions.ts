@@ -52,7 +52,7 @@ class DefinitionBuilder {
     for (const item of list) {
       const itemType = this.getType(item, `${itemName}${idx}`);
 
-      entry.subMembers.push(itemType);
+      entry.addSubMember(itemType);
       if (itemType instanceof DictEntry) {
         this.addDefinition(itemType);
       }
