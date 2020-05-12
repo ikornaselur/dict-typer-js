@@ -12,11 +12,11 @@ const isValidName = (name: string): boolean => {
 
 export class MemberEntry {
   name: string;
-  #subMembers: SubMembers;
+  subMembers: SubMembers;
 
   constructor(name: string, subMembers: SubMembers = []) {
     this.name = name;
-    this.#subMembers = subMembers;
+    this.subMembers = subMembers;
   }
 
   getImports(): Set<string> {
@@ -26,13 +26,13 @@ export class MemberEntry {
       imports.add(this.name);
     }
 
-    const subMemberImports = subMembersToImports(this.#subMembers);
+    const subMemberImports = subMembersToImports(this.subMembers);
 
     return new Set([...imports, ...subMemberImports]);
   }
 
   toString(): string {
-    const subString = subMembersToString(this.#subMembers);
+    const subString = subMembersToString(this.subMembers);
     if (subString) {
       return `${this.name}[${subString}]`;
     }
@@ -41,7 +41,7 @@ export class MemberEntry {
   }
 
   get dependsOn(): Set<string> {
-    return new Set(this.#subMembers.map(subMember => subMember.name));
+    return new Set(this.subMembers.map(subMember => subMember.name));
   }
 }
 

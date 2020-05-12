@@ -1,10 +1,10 @@
 import {DictEntry, MemberEntry, memberSort} from './models';
 import {Source, BaseSource, EntryType} from './types';
-import {keyToClassName, eqSet} from './utils';
+import {subMembersToString, subMembersToImports, keyToClassName, eqSet} from './utils';
 
 class DefinitionBuilder {
   #definitions: DictEntry[];
-  #rootList: Set<MemberEntry>;
+  #rootList: MemberEntry[];
   #rootTypeName: string;
   #typePostfix: string;
   #showImports: boolean;
@@ -17,16 +17,16 @@ class DefinitionBuilder {
     this.#typePostfix = typePostfix;
     this.#showImports = showImports;
     this.#definitions = [];
-    this.#rootList = new Set();
+    this.#rootList = [];
   }
 
   private addDefinition(entry: EntryType): EntryType {
     if (entry instanceof MemberEntry) {
+      this.#rootList.push(entry);
     } else {
       const dictsOnly = this.#definitions.filter(def => def instanceof DictEntry);
       for (const definition of dictsOnly) {
         if (eqSet(entry.keys, definition.keys)) {
-          console.log('UPDATING MEMBERS');
           definition.updateMembers(entry.members);
           return definition;
         }
@@ -46,7 +46,21 @@ class DefinitionBuilder {
     return entry;
   }
   private convertList(key: string, list: Array<BaseSource>, itemName: string): MemberEntry {
-    return new MemberEntry('Foo');
+    const entry = new MemberEntry(key);
+
+    let idx = 0;
+    for (const item of list) {
+      const itemType = this.getType(item, `${itemName}${idx}`);
+
+      entry.subMembers.push(itemType);
+      if (itemType instanceof DictEntry) {
+        this.addDefinition(itemType);
+      }
+
+      idx += 1;
+    }
+
+    return entry;
   }
   private convertDict(typeName: string, dict: object): DictEntry {
     const entry = new DictEntry(typeName);
@@ -130,7 +144,8 @@ class DefinitionBuilder {
         }
         typingImports = new Set([...typingImports, ...definition.getImports()]);
       }
-      if (this.#rootList.size > 0) {
+      if (this.#rootList.length > 0) {
+        typingImports = new Set([...typingImports, 'List', ...subMembersToImports(this.#rootList)]);
       }
       if (typingImports.size > 0) {
         this.#output += [`from typing import ${[...typingImports].sort().join(', ')}`, '', ''].join(
@@ -147,10 +162,16 @@ class DefinitionBuilder {
       .map(d => d.toString())
       .join('\n\n\n');
 
-    if (this.#rootList) {
-    }
-
-    if (this.#source === {}) {
+    if (this.#rootList.length > 0) {
+      if (this.#output.length > 0) {
+        this.#output += '\n';
+        if (this.#definitions.length > 0) {
+          this.#output += '\n\n';
+        }
+      }
+      this.#output += `${this.#rootTypeName}${this.#typePostfix} = ${subMembersToString([
+        ...this.#rootList,
+      ])}`;
     }
 
     return this.#output;

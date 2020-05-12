@@ -191,7 +191,7 @@ describe('Dicts', () => {
       ].join('\n'),
     );
   });
-  test('Nested overlapping dict', () => {
+  test('nested overlapping dict', () => {
     // test_convert_nested_overlapping_dict
     const source = [{x: {foo: 'bar'}}, {x: {baz: 'qux'}}];
 
@@ -215,6 +215,149 @@ describe('Dicts', () => {
         '',
         '',
         'Root = List[RootItem0]',
+      ].join('\n'),
+    );
+  });
+});
+
+describe('Lists', () => {
+  test('empty list', () => {
+    // test_convert_with_empty_list
+    const source = {items: []};
+
+    expect(getTypeDefinitions(source)).toBe(
+      [
+        'from typing import List',
+        '',
+        'from typing_extensions import TypedDict',
+        '',
+        '',
+        'class Root(TypedDict):',
+        '    items: List',
+      ].join('\n'),
+    );
+  });
+  test('empty root list', () => {
+    // test_convert_empty_root_list
+    const source = [];
+
+    // prettier-ignore
+    expect(getTypeDefinitions(source)).toBe(
+      [
+        'from typing import List',
+        '',
+        '',
+        'Root = List'
+      ].join('\n'),
+    );
+  });
+  test('simple list', () => {
+    // test_convert_with_simple_list
+    const source = {items: [1, 2, 3]};
+
+    expect(getTypeDefinitions(source)).toBe(
+      [
+        'from typing import List',
+        '',
+        'from typing_extensions import TypedDict',
+        '',
+        '',
+        'class Root(TypedDict):',
+        '    items: List[int]',
+      ].join('\n'),
+    );
+  });
+  test('mixed list', () => {
+    // test_convert_with_mixed_list
+    const source = {items: [1, '2', 3.5]};
+
+    expect(getTypeDefinitions(source)).toBe(
+      [
+        'from typing import List, Union',
+        '',
+        'from typing_extensions import TypedDict',
+        '',
+        '',
+        'class Root(TypedDict):',
+        '    items: List[Union[float, int, str]]',
+      ].join('\n'),
+    );
+  });
+});
+
+describe('Root lists', () => {
+  test('single item', () => {
+    // test_convert_root_list_single_item
+    const source = [{id: 123}];
+
+    expect(getTypeDefinitions(source)).toBe(
+      [
+        'from typing import List',
+        '',
+        'from typing_extensions import TypedDict',
+        '',
+        '',
+        'class RootItem0(TypedDict):',
+        '    id: int',
+        '',
+        '',
+        'Root = List[RootItem0]',
+      ].join('\n'),
+    );
+  });
+  test('multiple items', () => {
+    // test_convert_root_list_multiple_items
+    const source = [{id: 123}, {id: 456}, {id: 789}];
+
+    expect(getTypeDefinitions(source)).toBe(
+      [
+        'from typing import List',
+        '',
+        'from typing_extensions import TypedDict',
+        '',
+        '',
+        'class RootItem0(TypedDict):',
+        '    id: int',
+        '',
+        '',
+        'Root = List[RootItem0]',
+      ].join('\n'),
+    );
+  });
+  test('multiple mixed items', () => {
+    // test_convert_root_list_multiple_mixed_items
+    const source = [{id: 123}, {value: 'string'}, {id: 456}, {value: 'strong'}];
+
+    expect(getTypeDefinitions(source)).toBe(
+      [
+        'from typing import List, Union',
+        '',
+        'from typing_extensions import TypedDict',
+        '',
+        '',
+        'class RootItem0(TypedDict):',
+        '    id: int',
+        '',
+        '',
+        'class RootItem1(TypedDict):',
+        '    value: str',
+        '',
+        '',
+        'Root = List[Union[RootItem0, RootItem1]]',
+      ].join('\n'),
+    );
+  });
+  test('mixed non dict', () => {
+    // test_convert_root_list_mixed_non_dict
+    const source = [1, 2.0, '3'];
+
+    // prettier-ignore
+    expect(getTypeDefinitions(source)).toBe(
+      [
+        'from typing import List, Union',
+        '',
+        '',
+        'Root = List[Union[float, int, str]]'
       ].join('\n'),
     );
   });
