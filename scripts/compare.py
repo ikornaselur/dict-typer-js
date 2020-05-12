@@ -49,6 +49,10 @@ def run() -> None:
     py_tests = get_py_tests(py_test_path)
     js_tests = get_js_tests(js_test_path)
 
+    missing = 0
+    ignored = 0
+    covered = 0
+
     # Naive and inefficient, but it's a script, so don't really care
     for py_test_file, py_test_names in py_tests.items():
         to_output = []
@@ -56,6 +60,7 @@ def run() -> None:
         for py_test_name in py_test_names:
             if py_test_name in IGNORED:
                 to_output.append({"message": f" |  {py_test_name}", "fg": "yellow"})
+                ignored += 1
                 if file_colour == "green":
                     file_colour = "yellow"
                 continue
@@ -68,6 +73,7 @@ def run() -> None:
             if covered_by is None:
                 file_colour = "red"
                 to_output.append({"message": f" |  {py_test_name}", "fg": "red"})
+                missing += 1
             else:
                 to_output.append({"message": f" |  {py_test_name}", "fg": "green"})
                 to_output.append(
@@ -76,10 +82,16 @@ def run() -> None:
                         "fg": "green",
                     }
                 )
+                covered += 1
 
         click.secho(f"{py_test_file}", fg=file_colour)
         for output in to_output:
             click.secho(**output)  # type: ignore
+
+    click.echo()
+    click.secho(f"[+] Covered: {covered}", fg="green")
+    click.secho(f"[+] Ignored: {ignored}", fg="yellow")
+    click.secho(f"[+] Missing: {missing}", fg="red")
 
 
 if __name__ == "__main__":
