@@ -14,37 +14,55 @@ const isHexadecimal = (char: string): boolean => {
  * Javascript are floats, while the this library should process {"foo": 5.5} and
  * {"foo": 5.0} as same DictTypes
  */
-export const parse = (str: string): BaseSource => {
-  let i = 0;
+class Parser {
+  #str: string;
+  #idx: number;
 
-  let parseValue: () => BaseSource; // eslint-disable-line prefer-const
+  constructor(str: string) {
+    this.#str = str;
+    this.#idx = 0;
+  }
 
-  const skipWhitespace = (): void => {
-    while (str[i] === ' ' || str[i] === '\n' || str[i] === '\t' || str[i] === '\r') {
-      i++;
+  /*
+   * Skippers
+   */
+  skipWhitespace(): void {
+    while (
+      this.#str[this.#idx] === ' ' ||
+      this.#str[this.#idx] === '\n' ||
+      this.#str[this.#idx] === '\t' ||
+      this.#str[this.#idx] === '\r'
+    ) {
+      this.#idx++;
     }
-  };
+  }
 
-  const eatColon = (): void => {
-    if (str[i] !== ':') {
+  /*
+   * Eaters
+   */
+  eatColon(): void {
+    if (this.#str[this.#idx] !== ':') {
       throw new Error('Expeced ":"');
     }
-    i++;
-  };
-  const eatComma = (): void => {
-    if (str[i] !== ',') {
+    this.#idx++;
+  }
+  eatComma(): void {
+    if (this.#str[this.#idx] !== ',') {
       throw new Error('Expected ","');
     }
-    i++;
-  };
+    this.#idx++;
+  }
 
-  const parseString = (): string | null => {
-    if (str[i] === '"') {
-      i++;
+  /*
+   * Parsers
+   */
+  parseString(): string | null {
+    if (this.#str[this.#idx] === '"') {
+      this.#idx++;
       let result = '';
-      while (str[i] !== '"') {
-        if (str[i] === '\\') {
-          const char = str[i + 1];
+      while (this.#str[this.#idx] !== '"') {
+        if (this.#str[this.#idx] === '\\') {
+          const char = this.#str[this.#idx + 1];
           if (
             char === '"' ||
             char === '\\' ||
@@ -56,129 +74,136 @@ export const parse = (str: string): BaseSource => {
             char === 't'
           ) {
             result += char;
-            i++;
+            this.#idx++;
           } else if (char === 'u') {
             if (
-              isHexadecimal(str[i + 2]) &&
-              isHexadecimal(str[i + 3]) &&
-              isHexadecimal(str[i + 4]) &&
-              isHexadecimal(str[i + 5])
+              isHexadecimal(this.#str[this.#idx + 2]) &&
+              isHexadecimal(this.#str[this.#idx + 3]) &&
+              isHexadecimal(this.#str[this.#idx + 4]) &&
+              isHexadecimal(this.#str[this.#idx + 5])
             ) {
-              result += String.fromCharCode(parseInt(str.slice(i + 2, i + 6), 16));
-              i += 5;
+              result += String.fromCharCode(
+                parseInt(this.#str.slice(this.#idx + 2, this.#idx + 6), 16),
+              );
+              this.#idx += 5;
             }
           }
         } else {
-          result += str[i];
+          result += this.#str[this.#idx];
         }
-        i++;
+        this.#idx++;
       }
-      i++;
+      this.#idx++;
       return result;
     }
-  };
-  const parseKey = (): string => {
-    return parseString();
-  };
-  const parseNumber = (): number | null => {
-    const start = i;
-    if (str[i] === '-') {
-      i++;
+  }
+  parseNumber(): number | null {
+    const start = this.#idx;
+    if (this.#str[this.#idx] === '-') {
+      this.#idx++;
     }
-    if (str[i] === '0') {
-      i++;
-    } else if (str[i] >= '1' && str[i] <= '9') {
-      i++;
-      while (str[i] >= '0' && str[i] <= '9') {
-        i++;
+    if (this.#str[this.#idx] === '0') {
+      this.#idx++;
+    } else if (this.#str[this.#idx] >= '1' && this.#str[this.#idx] <= '9') {
+      this.#idx++;
+      while (this.#str[this.#idx] >= '0' && this.#str[this.#idx] <= '9') {
+        this.#idx++;
       }
     }
 
-    if (str[i] === '.') {
-      i++;
-      while (str[i] >= '0' && str[i] <= '9') {
-        i++;
+    if (this.#str[this.#idx] === '.') {
+      this.#idx++;
+      while (this.#str[this.#idx] >= '0' && this.#str[this.#idx] <= '9') {
+        this.#idx++;
       }
     }
-    if (str[i] === 'e' || str[i] === 'E') {
-      i++;
-      if (str[i] === '-' || str[i] === '+') {
-        i++;
+    if (this.#str[this.#idx] === 'e' || this.#str[this.#idx] === 'E') {
+      this.#idx++;
+      if (this.#str[this.#idx] === '-' || this.#str[this.#idx] === '+') {
+        this.#idx++;
       }
-      while (str[i] >= '0' && str[i] <= '9') {
-        i++;
+      while (this.#str[this.#idx] >= '0' && this.#str[this.#idx] <= '9') {
+        this.#idx++;
       }
     }
-    if (i > start) {
-      return Number(str.slice(start, i));
+    if (this.#idx > start) {
+      return Number(this.#str.slice(start, this.#idx));
     }
-  };
-  const parseKeyword = <T extends boolean | null>(key: string, value: T): T => {
-    if (str.slice(i, i + key.length) === key) {
-      i += key.length;
+  }
+  parseKeyword<T extends boolean | null>(key: string, value: T): T {
+    if (this.#str.slice(this.#idx, this.#idx + key.length) === key) {
+      this.#idx += key.length;
       return value;
     }
-  };
-  const parseObject = (): object | null => {
-    if (str[i] === '{') {
-      i++;
-      skipWhitespace();
+  }
+  parseObject(): object | null {
+    if (this.#str[this.#idx] === '{') {
+      this.#idx++;
+      this.skipWhitespace();
 
       const result = {};
 
       let initial = true;
-      while (str[i] !== '}') {
+      while (this.#str[this.#idx] !== '}') {
         if (!initial) {
-          eatComma();
-          skipWhitespace();
+          this.eatComma();
+          this.skipWhitespace();
         }
 
-        const key = parseKey();
+        const key = this.parseString();
 
-        skipWhitespace();
-        eatColon();
+        this.skipWhitespace();
+        this.eatColon();
 
-        const value = parseValue();
+        const value = this.parseValue();
 
         result[key] = value;
         initial = false;
       }
-      i++; // Moving over '}'
+      this.#idx++; // Moving over '}'
       return result;
     }
-  };
-  const parseArray = (): BaseSource[] | null => {
-    if (str[i] === '[') {
-      i++;
-      skipWhitespace();
+  }
+  parseArray(): BaseSource[] | null {
+    if (this.#str[this.#idx] === '[') {
+      this.#idx++;
+      this.skipWhitespace();
 
       const result = [];
       let initial = true;
-      while (str[i] !== ']') {
+      while (this.#str[this.#idx] !== ']') {
         if (!initial) {
-          eatComma();
+          this.eatComma();
         }
-        const value = parseValue();
+        const value = this.parseValue();
         result.push(value);
         initial = false;
       }
-      i++; // Moving over ']'
+      this.#idx++; // Moving over ']'
       return result;
     }
-  };
-  parseValue = (): BaseSource => {
-    skipWhitespace();
+  }
+  parseValue(): BaseSource {
+    this.skipWhitespace();
     const value =
-      parseString() ??
-      parseNumber() ??
-      parseObject() ??
-      parseArray() ??
-      parseKeyword('true', true) ??
-      parseKeyword('false', false) ??
-      parseKeyword('null', null);
-    skipWhitespace();
+      this.parseString() ??
+      this.parseNumber() ??
+      this.parseObject() ??
+      this.parseArray() ??
+      this.parseKeyword('true', true) ??
+      this.parseKeyword('false', false) ??
+      this.parseKeyword('null', null);
+    this.skipWhitespace();
     return value;
-  };
+  }
 
-  return parseValue();
+  parse(): BaseSource {
+    return this.parseValue();
+  }
+}
+
+export const parse = (str: string): BaseSource => {
+  const parser = new Parser(str);
+
+  return parser.parse();
 };
