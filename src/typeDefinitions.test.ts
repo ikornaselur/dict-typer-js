@@ -349,7 +349,7 @@ describe('Root lists', () => {
   });
   test('mixed non dict', () => {
     // test_convert_root_list_mixed_non_dict
-    const source = [1, 2.0, '3'];
+    const source = [1, 2.1, '3'];
 
     // prettier-ignore
     expect(getTypeDefinitions(source)).toBe(
