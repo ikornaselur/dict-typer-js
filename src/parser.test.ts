@@ -7,11 +7,13 @@ describe('Parser', () => {
 
     expect(out).toEqual({foo: new Str('bar'), baz: new Int(10), qux: new Float(10)});
   });
+
   test('Basic list parsing', () => {
     const out = parse('["foo", "bar", 10]');
 
     expect(out).toEqual([new Str('foo'), new Str('bar'), new Int(10)]);
   });
+
   test('Basic elements parsing', () => {
     expect(parse('"foo"')).toBeInstanceOf(Str);
     expect(parse('10')).toBeInstanceOf(Int);
@@ -19,5 +21,10 @@ describe('Parser', () => {
     expect(parse('null')).toBeInstanceOf(Null);
     expect(parse('true')).toBeInstanceOf(Bool);
     expect(parse('false')).toBeInstanceOf(Bool);
+  });
+
+  test('Error handling', () => {
+    expect(() => parse('{"hello')).toThrowError(/Unable to parse input string/);
+    expect(() => parse('[10, 20,]')).toThrowError(/Unable to parse input string/);
   });
 });

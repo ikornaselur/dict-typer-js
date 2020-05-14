@@ -223,6 +223,13 @@ class Parser {
 }
 
 export const parse = (str: string): BaseSource => {
+  // Error checking the input is just done by using the built in JSON parser
+  try {
+    JSON.parse(str);
+  } catch (error) {
+    throw new Error(`Unable to parse input string: ${error}`);
+  }
+
   const parser = new Parser(str);
 
   return parser.parse();
