@@ -3,7 +3,7 @@ import {getTypeDefinitions} from './typeDefinitions';
 describe('Basics', () => {
   test('simple json', () => {
     // test_convert_simple_json
-    const source = {id: 123, item: 'value', progress: 0.71};
+    const source = JSON.stringify({id: 123, item: 'value', progress: 0.71});
 
     // prettier-ignore
     expect(getTypeDefinitions(source)).toBe([
@@ -19,14 +19,14 @@ describe('Basics', () => {
 
   test('base types', () => {
     // test_convert_base_types
-    const source = {
+    const source = JSON.stringify({
       boolType: true,
       floatType: 1.23,
       intType: 120,
       strType: 'hello',
       noneType: null,
       listType: [1, 2, 3],
-    };
+    });
 
     // prettier-ignore
     expect(getTypeDefinitions(source)).toBe([
@@ -47,7 +47,7 @@ describe('Basics', () => {
 
   test('convert none', () => {
     // test_convert_none
-    const source = {value: null};
+    const source = JSON.stringify({value: null});
 
     // prettier-ignore
     expect(getTypeDefinitions(source)).toBe(
@@ -65,7 +65,7 @@ describe('Basics', () => {
 describe('Dicts', () => {
   test('empty root dicts', () => {
     // test_convert_empty_root_dict
-    const source = {};
+    const source = JSON.stringify({});
 
     // prettier-ignore
     expect(getTypeDefinitions(source)).toBe(
@@ -80,7 +80,7 @@ describe('Dicts', () => {
   });
   test('nested empty dict', () => {
     // test_convert_with_nested_empty_dict
-    const source = {nest: {}};
+    const source = JSON.stringify({nest: {}});
 
     expect(getTypeDefinitions(source)).toBe(
       [
@@ -98,7 +98,7 @@ describe('Dicts', () => {
   });
   test('nested dict', () => {
     // test_convert_with_nested_dict
-    const source = {nest: {foo: 'bar'}};
+    const source = JSON.stringify({nest: {foo: 'bar'}});
 
     expect(getTypeDefinitions(source)).toBe(
       [
@@ -116,7 +116,7 @@ describe('Dicts', () => {
   });
   test('multiple levels nested dict', () => {
     // test_convert_with_multiple_levels_nested_dict
-    const source = {level1: {level2: {level3: {level4: 'foo'}}}};
+    const source = JSON.stringify({level1: {level2: {level3: {level4: 'foo'}}}});
 
     expect(getTypeDefinitions(source)).toBe(
       [
@@ -142,7 +142,7 @@ describe('Dicts', () => {
   });
   test('multiple nested dict', () => {
     // test_convert_with_multiple_nested_dict
-    const source = {nest: {foo: 'bar'}, otherNest: {baz: 'qux'}};
+    const source = JSON.stringify({nest: {foo: 'bar'}, otherNest: {baz: 'qux'}});
 
     expect(getTypeDefinitions(source)).toBe(
       [
@@ -165,11 +165,11 @@ describe('Dicts', () => {
   });
   test('repeated nested dict', () => {
     // test_convert_with_repeated_nested_dict
-    const source = {
+    const source = JSON.stringify({
       nest: {foo: 'bar'},
       otherNest: {foo: 'qux'},
       uniqueNest: {baz: 'qux'},
-    };
+    });
 
     expect(getTypeDefinitions(source)).toBe(
       [
@@ -193,7 +193,7 @@ describe('Dicts', () => {
   });
   test('nested overlapping dict', () => {
     // test_convert_nested_overlapping_dict
-    const source = [{x: {foo: 'bar'}}, {x: {baz: 'qux'}}];
+    const source = JSON.stringify([{x: {foo: 'bar'}}, {x: {baz: 'qux'}}]);
 
     expect(getTypeDefinitions(source)).toBe(
       [
@@ -223,7 +223,7 @@ describe('Dicts', () => {
 describe('Lists', () => {
   test('empty list', () => {
     // test_convert_with_empty_list
-    const source = {items: []};
+    const source = JSON.stringify({items: []});
 
     expect(getTypeDefinitions(source)).toBe(
       [
@@ -239,7 +239,7 @@ describe('Lists', () => {
   });
   test('empty root list', () => {
     // test_convert_empty_root_list
-    const source = [];
+    const source = JSON.stringify([]);
 
     // prettier-ignore
     expect(getTypeDefinitions(source)).toBe(
@@ -253,7 +253,7 @@ describe('Lists', () => {
   });
   test('simple list', () => {
     // test_convert_with_simple_list
-    const source = {items: [1, 2, 3]};
+    const source = JSON.stringify({items: [1, 2, 3]});
 
     expect(getTypeDefinitions(source)).toBe(
       [
@@ -269,7 +269,7 @@ describe('Lists', () => {
   });
   test('mixed list', () => {
     // test_convert_with_mixed_list
-    const source = {items: [1, '2', 3.5]};
+    const source = JSON.stringify({items: [1, '2', 3.5]});
 
     expect(getTypeDefinitions(source)).toBe(
       [
@@ -288,7 +288,7 @@ describe('Lists', () => {
 describe('Root lists', () => {
   test('single item', () => {
     // test_convert_root_list_single_item
-    const source = [{id: 123}];
+    const source = JSON.stringify([{id: 123}]);
 
     expect(getTypeDefinitions(source)).toBe(
       [
@@ -307,7 +307,7 @@ describe('Root lists', () => {
   });
   test('multiple items', () => {
     // test_convert_root_list_multiple_items
-    const source = [{id: 123}, {id: 456}, {id: 789}];
+    const source = JSON.stringify([{id: 123}, {id: 456}, {id: 789}]);
 
     expect(getTypeDefinitions(source)).toBe(
       [
@@ -326,7 +326,7 @@ describe('Root lists', () => {
   });
   test('multiple mixed items', () => {
     // test_convert_root_list_multiple_mixed_items
-    const source = [{id: 123}, {value: 'string'}, {id: 456}, {value: 'strong'}];
+    const source = JSON.stringify([{id: 123}, {value: 'string'}, {id: 456}, {value: 'strong'}]);
 
     expect(getTypeDefinitions(source)).toBe(
       [
@@ -349,7 +349,7 @@ describe('Root lists', () => {
   });
   test('mixed non dict', () => {
     // test_convert_root_list_mixed_non_dict
-    const source = [1, 2.1, '3'];
+    const source = JSON.stringify([1, 2.1, '3']);
 
     // prettier-ignore
     expect(getTypeDefinitions(source)).toBe(

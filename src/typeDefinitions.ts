@@ -1,6 +1,7 @@
 import {DictEntry, MemberEntry, memberSort} from './models';
-import {Source, BaseSource, EntryType} from './types';
+import {Source, EntryType} from './types';
 import {subMembersToString, subMembersToImports, keyToClassName, eqSet} from './utils';
+import {parse} from './parser';
 
 class DefinitionBuilder {
   #definitions: DictEntry[];
@@ -45,7 +46,7 @@ class DefinitionBuilder {
     }
     return entry;
   }
-  private convertList(key: string, list: Array<BaseSource>, itemName: string): MemberEntry {
+  private convertList(key: string, list: Array<Source>, itemName: string): MemberEntry {
     const entry = new MemberEntry(key);
 
     let idx = 0;
@@ -74,7 +75,7 @@ class DefinitionBuilder {
     }
     return entry;
   }
-  private getType(item: any, key: string): EntryType {
+  private getType(item: Source, key: string): EntryType {
     switch (typeof item) {
       case 'boolean':
         return new MemberEntry('bool');
@@ -90,14 +91,17 @@ class DefinitionBuilder {
         if (item === null) {
           return new MemberEntry('None');
         } else if (Array.isArray(item)) {
-          const listItemTypes = [];
+          const listItemTypes: EntryType[] = [];
           let idx = 0;
 
           for (const element of item) {
             const itemType = this.getType(element, `${key}Item${idx}`);
             if (itemType instanceof DictEntry) {
               if (
-                [...listItemTypes].map(listItemType => listItemType.members).indexOf(itemType) > -1
+                listItemTypes
+                  .filter(listItemType => listItemType instanceof DictEntry)
+                  .map(listItemType => listItemType.members)
+                  .indexOf(itemType) > -1
               ) {
                 listItemTypes.push(itemType);
                 idx += 1;
@@ -179,12 +183,12 @@ class DefinitionBuilder {
 }
 
 export const getTypeDefinitions = (
-  source: Source,
+  source: string,
   rootTypeName = 'Root',
   typePostfix = '',
   showImports = true,
 ): string => {
-  const builder = new DefinitionBuilder(source, rootTypeName, typePostfix, showImports);
-
+  const parsed = parse(source);
+  const builder = new DefinitionBuilder(parsed, rootTypeName, typePostfix, showImports);
   return builder.buildOutput();
 };

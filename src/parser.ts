@@ -1,5 +1,5 @@
 import {Int, Float, Str, Bool, Null} from './baseTypes';
-import {BaseSource} from './types';
+import {Source} from './types';
 
 const isHexadecimal = (char: string): boolean => {
   return (char >= '0' && char <= '9') || (char.toLowerCase() >= 'a' && char.toLowerCase() <= 'f');
@@ -23,7 +23,7 @@ class Parser {
     this.#idx = 0;
   }
 
-  parse(): BaseSource {
+  parse(): Source {
     return this.parseValue();
   }
 
@@ -159,7 +159,7 @@ class Parser {
       this.#idx++;
       this.skipWhitespace();
 
-      const result: {[index: string]: BaseSource} = {};
+      const result: {[index: string]: Source} = {};
 
       let initial = true;
       while (this.#str[this.#idx] !== '}') {
@@ -185,7 +185,7 @@ class Parser {
       return result;
     }
   }
-  parseArray(): BaseSource[] | undefined {
+  parseArray(): Source[] | undefined {
     if (this.#str[this.#idx] === '[') {
       this.#idx++;
       this.skipWhitespace();
@@ -204,7 +204,7 @@ class Parser {
       return result;
     }
   }
-  parseValue(): BaseSource {
+  parseValue(): Source {
     this.skipWhitespace();
     const value =
       this.parseString() ??
@@ -222,7 +222,7 @@ class Parser {
   }
 }
 
-export const parse = (str: string): BaseSource => {
+export const parse = (str: string): Source => {
   // Error checking the input is just done by using the built in JSON parser
   try {
     JSON.parse(str);

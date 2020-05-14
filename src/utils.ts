@@ -32,6 +32,9 @@ export const subMembersToString = (subMembers: SubMembers): string => {
     subMembers.map(member => member.name).some(name => name === 'None')
   ) {
     const optionalMember = subMembers.find(member => member.name !== 'None');
+    if (!optionalMember) {
+      throw new Error('Unable to find optional member');
+    }
     return `Optional[${getMemberValue(optionalMember)}]`;
   }
   if (subMembers.length === 1) {

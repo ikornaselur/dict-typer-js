@@ -78,7 +78,7 @@ export class DictEntry {
   getImports(): Set<string> {
     return new Set(
       Object.values(this.members)
-        .map(sm => subMembersToImports(sm))
+        .map(sm => [...subMembersToImports(sm)])
         .reduce((prev, curr) => prev.concat([...curr]), []),
     );
   }
@@ -128,7 +128,7 @@ export class DictEntry {
     }
     const membersDepends = Object.values(this.members)
       .flat()
-      .map(member => member.dependsOn)
+      .map(member => [...member.dependsOn])
       .reduce((prev, curr) => prev.concat([...curr]), []);
     const memberNames = Object.values(this.members)
       .flat()
