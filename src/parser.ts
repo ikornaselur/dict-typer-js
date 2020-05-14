@@ -1,4 +1,4 @@
-//import {Int, Float, Str} from './baseTypes';
+import {Int, Float, Str, Bool, Null} from './baseTypes';
 import {BaseSource} from './types';
 
 const isHexadecimal = (char: string): boolean => {
@@ -21,6 +21,10 @@ class Parser {
   constructor(str: string) {
     this.#str = str;
     this.#idx = 0;
+  }
+
+  parse(): BaseSource {
+    return this.parseValue();
   }
 
   /*
@@ -56,7 +60,14 @@ class Parser {
   /*
    * Parsers
    */
-  parseString(): string | null {
+  parseString(): Str | undefined {
+    const value = this.parseStringRaw();
+    if (value) {
+      return new Str(value);
+    }
+  }
+
+  parseStringRaw(): string | undefined {
     if (this.#str[this.#idx] === '"') {
       this.#idx++;
       let result = '';
@@ -97,8 +108,9 @@ class Parser {
       return result;
     }
   }
-  parseNumber(): number | null {
+  parseNumber(): Int | Float | undefined {
     const start = this.#idx;
+    let floatNumber = false;
     if (this.#str[this.#idx] === '-') {
       this.#idx++;
     }
@@ -112,6 +124,7 @@ class Parser {
     }
 
     if (this.#str[this.#idx] === '.') {
+      floatNumber = true;
       this.#idx++;
       while (this.#str[this.#idx] >= '0' && this.#str[this.#idx] <= '9') {
         this.#idx++;
@@ -127,21 +140,26 @@ class Parser {
       }
     }
     if (this.#idx > start) {
-      return Number(this.#str.slice(start, this.#idx));
+      const value = Number(this.#str.slice(start, this.#idx));
+      if (floatNumber) {
+        return new Float(value);
+      } else {
+        return new Int(value);
+      }
     }
   }
-  parseKeyword<T extends boolean | null>(key: string, value: T): T {
+  parseKeyword<T extends Bool | Null>(key: string, value: T): T | undefined {
     if (this.#str.slice(this.#idx, this.#idx + key.length) === key) {
       this.#idx += key.length;
       return value;
     }
   }
-  parseObject(): object | null {
+  parseObject(): object | undefined {
     if (this.#str[this.#idx] === '{') {
       this.#idx++;
       this.skipWhitespace();
 
-      const result = {};
+      const result: {[index: string]: BaseSource} = {};
 
       let initial = true;
       while (this.#str[this.#idx] !== '}') {
@@ -150,7 +168,10 @@ class Parser {
           this.skipWhitespace();
         }
 
-        const key = this.parseString();
+        const key = this.parseStringRaw();
+        if (!key) {
+          throw new Error('Key not found');
+        }
 
         this.skipWhitespace();
         this.eatColon();
@@ -164,7 +185,7 @@ class Parser {
       return result;
     }
   }
-  parseArray(): BaseSource[] | null {
+  parseArray(): BaseSource[] | undefined {
     if (this.#str[this.#idx] === '[') {
       this.#idx++;
       this.skipWhitespace();
@@ -190,15 +211,14 @@ class Parser {
       this.parseNumber() ??
       this.parseObject() ??
       this.parseArray() ??
-      this.parseKeyword('true', true) ??
-      this.parseKeyword('false', false) ??
-      this.parseKeyword('null', null);
+      this.parseKeyword('true', new Bool(true)) ??
+      this.parseKeyword('false', new Bool(false)) ??
+      this.parseKeyword('null', new Null(null));
     this.skipWhitespace();
+    if (!value) {
+      throw new Error('Unable to get value');
+    }
     return value;
-  }
-
-  parse(): BaseSource {
-    return this.parseValue();
   }
 }
 
