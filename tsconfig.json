@@ -4,7 +4,9 @@
     "target": "es2015",
     "declaration": true,
     "outDir": "./dist",
-    "lib": ["es2019"]
+    "lib": ["es2020"],
+    "strict": true,
+    "strictNullChecks": true
   },
   "include": ["src/**/*"]
 }

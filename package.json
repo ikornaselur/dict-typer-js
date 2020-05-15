@@ -9,7 +9,8 @@
   "scripts": {
     "test": "jest --verbose",
     "testw": "jest --verbose --watch",
-    "lint": "eslint src/*"
+    "lint": "eslint src/*",
+    "type": "tsc --project . --noEmit"
   },
   "devDependencies": {
     "@types/jest": "^25.2.1",
