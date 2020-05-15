@@ -78,7 +78,7 @@ export class DictEntry {
   getImports(): Set<string> {
     return new Set(
       Object.values(this.members)
-        .map(sm => subMembersToImports(sm))
+        .map(sm => [...subMembersToImports(sm)])
         .reduce((prev, curr) => prev.concat([...curr]), []),
     );
   }
@@ -114,7 +114,13 @@ export class DictEntry {
     }
 
     for (const key of Object.keys(this.members)) {
-      console.log(key);
+      const otherMember = members[key];
+
+      for (const entry of otherMember) {
+        if (!this.members[key].some(e => e.equals(entry))) {
+          this.members[key].push(entry);
+        }
+      }
     }
   }
 
@@ -128,7 +134,7 @@ export class DictEntry {
     }
     const membersDepends = Object.values(this.members)
       .flat()
-      .map(member => member.dependsOn)
+      .map(member => [...member.dependsOn])
       .reduce((prev, curr) => prev.concat([...curr]), []);
     const memberNames = Object.values(this.members)
       .flat()
