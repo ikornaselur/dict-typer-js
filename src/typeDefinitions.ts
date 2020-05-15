@@ -2,6 +2,7 @@ import {DictEntry, MemberEntry, memberSort} from './models';
 import {Source, EntryType} from './types';
 import {subMembersToString, subMembersToImports, keyToClassName, eqSet} from './utils';
 import {parse} from './parser';
+import {Int, Float, Str, Bool, Null} from './baseTypes';
 
 class DefinitionBuilder {
   #definitions: DictEntry[];
@@ -76,46 +77,47 @@ class DefinitionBuilder {
     return entry;
   }
   private getType(item: Source, key: string): EntryType {
-    switch (typeof item) {
-      case 'boolean':
-        return new MemberEntry('bool');
-      case 'number':
-        if (Number.isInteger(item)) {
-          return new MemberEntry('int');
-        } else {
-          return new MemberEntry('float');
-        }
-      case 'string':
+    if (item === null) {
+      throw new Error('Unable to get type on null');
+    }
+    switch (item.constructor) {
+      case Int:
+        return new MemberEntry('int');
+      case Float:
+        return new MemberEntry('float');
+      case Str:
         return new MemberEntry('str');
-      case 'object':
-        if (item === null) {
-          return new MemberEntry('None');
-        } else if (Array.isArray(item)) {
-          const listItemTypes: EntryType[] = [];
+      case Bool:
+        return new MemberEntry('bool');
+      case Null:
+        return new MemberEntry('None');
+      case Array:
+        if (Array.isArray(item)) {
+          const dictEntryItems: DictEntry[] = [];
+          const memberEntryItems: MemberEntry[] = [];
           let idx = 0;
 
           for (const element of item) {
             const itemType = this.getType(element, `${key}Item${idx}`);
             if (itemType instanceof DictEntry) {
-              if (
-                listItemTypes
-                  .filter(listItemType => listItemType instanceof DictEntry)
-                  .map(listItemType => listItemType.members)
-                  .indexOf(itemType) > -1
-              ) {
-                listItemTypes.push(itemType);
+              if (!dictEntryItems.some(listItemType => eqSet(listItemType.keys, itemType.keys))) {
+                dictEntryItems.push(itemType);
                 idx += 1;
                 if (itemType instanceof DictEntry) {
                   this.addDefinition(itemType);
                 }
               }
-            } else if (listItemTypes.find(elm => elm.toString() == itemType.toString()) == null) {
-              listItemTypes.push(itemType);
+            } else if (
+              memberEntryItems.find(elm => elm.toString() == itemType.toString()) == null
+            ) {
+              memberEntryItems.push(itemType);
             }
           }
 
-          return new MemberEntry('List', [...listItemTypes]);
-        } else if (item.constructor == Object) {
+          return new MemberEntry('List', [...dictEntryItems, ...memberEntryItems]);
+        }
+      case Object:
+        if (typeof item === 'object') {
           return this.convertDict(`${keyToClassName(key)}${this.#typePostfix}`, item);
         }
       default:
@@ -130,16 +132,18 @@ class DefinitionBuilder {
 
     if (Array.isArray(this.#source)) {
       this.addDefinition(this.convertList('List', this.#source, `${this.#rootTypeName}Item`));
-    } else {
+    } else if (typeof this.#source === 'object' && this.#source !== null) {
       this.addDefinition(
         this.convertDict(`${this.#rootTypeName}${this.#typePostfix}`, this.#source),
       );
+    } else {
+      throw new Error('Unable to build output for given source');
     }
 
     this.#output = '';
 
     if (this.#showImports) {
-      let typingImports = new Set([]);
+      let typingImports: Set<string> = new Set([]);
       let typedDictImport = false;
 
       for (const definition of this.#definitions) {

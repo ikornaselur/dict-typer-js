@@ -114,7 +114,13 @@ export class DictEntry {
     }
 
     for (const key of Object.keys(this.members)) {
-      console.log(key);
+      const otherMember = members[key];
+
+      for (const entry of otherMember) {
+        if (!this.members[key].some(e => e.equals(entry))) {
+          this.members[key].push(entry);
+        }
+      }
     }
   }
 
