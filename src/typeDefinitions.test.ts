@@ -430,3 +430,224 @@ describe('Invalid key names', () => {
     );
   });
 });
+
+describe('Dicts in lists', () => {
+  test('of repeaded dicts', () => {
+    // test_convert_list_of_repeated_dicts
+    const source = `{
+      "dictList": [
+        {"id": 123},
+        {"id": 456},
+        {"id": 789}
+      ]
+    }`;
+
+    expect(getTypeDefinitions(source)).toBe(
+      [
+        'from typing import List',
+        '',
+        'from typing_extensions import TypedDict',
+        '',
+        '',
+        'class DictListItem0(TypedDict):',
+        '    id: int',
+        '',
+        '',
+        'class Root(TypedDict):',
+        '    dictList: List[DictListItem0]',
+      ].join('\n'),
+    );
+  });
+  test('of mixed dicts', () => {
+    // test_convert_list_of_mixed_dicts
+    const source = `{
+      "dictList": [
+        {"foo": 123},
+        {"bar": 456},
+        {"baz": 789},
+        {"baz": 0}
+      ]
+    }`;
+
+    expect(getTypeDefinitions(source)).toBe(
+      [
+        'from typing import List, Union',
+        '',
+        'from typing_extensions import TypedDict',
+        '',
+        '',
+        'class DictListItem0(TypedDict):',
+        '    foo: int',
+        '',
+        '',
+        'class DictListItem1(TypedDict):',
+        '    bar: int',
+        '',
+        '',
+        'class DictListItem2(TypedDict):',
+        '    baz: int',
+        '',
+        '',
+        'class Root(TypedDict):',
+        '    dictList: List[Union[DictListItem0, DictListItem1, DictListItem2]]',
+      ].join('\n'),
+    );
+  });
+  test('of repeated dicts different types combines', () => {
+    // test_convert_list_of_repeated_dicts_different_types_combined
+    const source = `{
+      "dictList": [
+        {"id": 123},
+        {"id": 456.0},
+        {"id": "789"}
+      ]
+    }`;
+
+    expect(getTypeDefinitions(source)).toBe(
+      [
+        'from typing import List, Union',
+        '',
+        'from typing_extensions import TypedDict',
+        '',
+        '',
+        'class DictListItem0(TypedDict):',
+        '    id: Union[float, int, str]',
+        '',
+        '',
+        'class Root(TypedDict):',
+        '    dictList: List[DictListItem0]',
+      ].join('\n'),
+    );
+  });
+});
+
+describe('Optional', () => {
+  test('single optional in list', () => {
+    // test_convert_single_optional_in_list
+    const source = '[1, 2, null, 3, 4, null, 5, 6]';
+
+    // prettier-ignore
+    expect(getTypeDefinitions(source)).toBe(
+      [
+        'from typing import List, Optional',
+        '',
+        '',
+        'Root = List[Optional[int]]'
+      ].join('\n'),
+    );
+  });
+  test('not optional if multiple types with none', () => {
+    // test_convert_not_optional_if_multiple_types_with_none
+    const source = '[1, 2, null, 3.0, 4.0, null, 5, 6]';
+
+    // prettier-ignore
+    expect(getTypeDefinitions(source)).toBe(
+      [
+        "from typing import List, Union",
+        "",
+        "",
+        "Root = List[Union[None, float, int]]",
+      ].join('\n'),
+    );
+  });
+  test('optional combined dicts', () => {
+    // test_convert_optional_combined_dicts
+    const source = `{
+      "owner": {"name": "foo", "age": 44},
+      "coOwner": {"name": "bar", "age": null}
+    }`;
+
+    // prettier-ignore
+    expect(getTypeDefinitions(source)).toBe(
+      [
+        "from typing import Optional",
+        "",
+        "from typing_extensions import TypedDict",
+        "",
+        "",
+        "class Owner(TypedDict):",
+        "    name: str",
+        "    age: Optional[int]",
+        "",
+        "",
+        "class Root(TypedDict):",
+        "    owner: Owner",
+        "    coOwner: Owner",
+      ].join('\n'),
+    );
+  });
+});
+
+describe('Imports', () => {
+  test('hides import optionally', () => {
+    // test_convert_hides_import_optionally
+    const source = `{
+      "itemsList": [1, 2.0, "3"]
+    }`;
+
+    expect(getTypeDefinitions(source, {showImports: false})).toBe(
+      [
+        'class Root(TypedDict):',
+        '    itemsList: List[Union[float, int, str]]',
+        '    itemsTuple: Tuple[int]',
+        '    itemsSet: Set[Union[float, int]]',
+      ].join('\n'),
+    );
+  });
+  test('adds imports with nested defs', () => {
+    // test_convert_optionally_adds_imports_with_nested_defs
+    const source = `{
+      "itemsList": [1, 2, 3],
+      "nest": {
+        "otherList": [[4, 5.0], 5, 6]
+      }
+    }`;
+
+    expect(getTypeDefinitions(source)).toBe(
+      [
+        'from typing import List, Union',
+        '',
+        'from typing_extensions import TypedDict',
+        '',
+        '',
+        'class Nest(TypedDict):',
+        '    itemsTuple: List[Union[List[Union[float, int]], int]]',
+        '',
+        '',
+        'class Root(TypedDict):',
+        '    itemsList: List[int]',
+        '    nest: Nest',
+      ].join('\n'),
+    );
+  });
+  test('with no typing imports', () => {
+    // test_convert_imports_with_no_typing_imports
+    const source = '{"id": 10, "value": "value"}';
+
+    // prettier-ignore
+    expect(getTypeDefinitions(source)).toBe(
+      [
+        "from typing_extensions import TypedDict",
+        "",
+        "",
+        "class Root(TypedDict):",
+        "    id: int",
+        "    value: str",
+      ].join('\n'),
+    );
+  });
+  test('with no typed dict', () => {
+    // test_convert_imports_with_no_typed_dict
+    const source = '[1, 2, 3]';
+
+    // prettier-ignore
+    expect(getTypeDefinitions(source)).toBe(
+      [
+        "from typing import List",
+        "",
+        "",
+        "Root = List[int]",
+      ].join('\n'),
+    );
+  });
+});

@@ -188,9 +188,7 @@ class DefinitionBuilder {
 
 export const getTypeDefinitions = (
   source: string,
-  rootTypeName = 'Root',
-  typePostfix = '',
-  showImports = true,
+  {rootTypeName = 'Root', typePostfix = '', showImports = true} = {},
 ): string => {
   const parsed = parse(source);
   const builder = new DefinitionBuilder(parsed, rootTypeName, typePostfix, showImports);
