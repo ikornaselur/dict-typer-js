@@ -85,7 +85,7 @@ export class DictEntry {
 
   toString(): string {
     const out: string[] = [];
-    if (this.#forceAlternative) {
+    if (this.#forceAlternative || [...this.keys].some(key => !isValidKey(key))) {
       if (Object.keys(this.members).length === 0) {
         out.push(`${this.name} = TypedDict("${this.name}", {})`);
       } else {

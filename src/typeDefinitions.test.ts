@@ -358,7 +358,6 @@ describe('Root lists', () => {
       {"id": 456},
       {"value": "strong"}
     ]`;
-
     expect(getTypeDefinitions(source)).toBe(
       [
         'from typing import List, Union',
@@ -389,6 +388,44 @@ describe('Root lists', () => {
         '',
         '',
         'Root = List[Union[float, int, str]]'
+      ].join('\n'),
+    );
+  });
+});
+
+describe('Invalid key names', () => {
+  test('in root', () => {
+    // test_convert_with_invalid_key_names
+    const source = '{"invalid-key": 123, "from": "far away"}';
+
+    expect(getTypeDefinitions(source)).toBe(
+      [
+        'from typing_extensions import TypedDict',
+        '',
+        '',
+        'Root = TypedDict("Root", {',
+        '    "invalid-key": int,',
+        '    "from": str,',
+        '})',
+      ].join('\n'),
+    );
+  });
+  test('nested', () => {
+    // test_convert_with_invalid_key_names_nested
+    const source = '{"invalid-key": {"id": 123}}';
+
+    expect(getTypeDefinitions(source)).toBe(
+      [
+        'from typing_extensions import TypedDict',
+        '',
+        '',
+        'class InvalidKey(TypedDict):',
+        '    id: int',
+        '',
+        '',
+        'Root = TypedDict("Root", {',
+        '    "invalid-key": InvalidKey,',
+        '})',
       ].join('\n'),
     );
   });
