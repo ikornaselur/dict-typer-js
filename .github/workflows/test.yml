@@ -17,8 +17,6 @@ jobs:
       with:
         path: ~/node_modules
         key: deps-${{ hashFiles('**/yarn.lock') }}
-        restore-keys: |
-          deps-${{ hashFiles('**/yarn.lock') }}
 
     - name: Install dependencies
       run: yarn install
