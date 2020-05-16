@@ -82,6 +82,7 @@ describe('Dicts', () => {
       ].join('\n')
     );
   });
+
   test('nested empty dict', () => {
     // test_convert_with_nested_empty_dict
     const source = '{"nest": {}}';
@@ -100,6 +101,7 @@ describe('Dicts', () => {
       ].join('\n'),
     );
   });
+
   test('nested dict', () => {
     // test_convert_with_nested_dict
     const source = `{
@@ -122,6 +124,7 @@ describe('Dicts', () => {
       ].join('\n'),
     );
   });
+
   test('multiple levels nested dict', () => {
     // test_convert_with_multiple_levels_nested_dict
     const source = `{
@@ -156,6 +159,7 @@ describe('Dicts', () => {
       ].join('\n'),
     );
   });
+
   test('multiple nested dict', () => {
     // test_convert_with_multiple_nested_dict
     const source = `{
@@ -182,6 +186,7 @@ describe('Dicts', () => {
       ].join('\n'),
     );
   });
+
   test('repeated nested dict', () => {
     // test_convert_with_repeated_nested_dict
     const source = `{
@@ -210,6 +215,7 @@ describe('Dicts', () => {
       ].join('\n'),
     );
   });
+
   test('nested overlapping dict', () => {
     // test_convert_nested_overlapping_dict
     const source = `[
@@ -259,6 +265,7 @@ describe('Lists', () => {
       ].join('\n'),
     );
   });
+
   test('empty root list', () => {
     // test_convert_empty_root_list
     const source = '[]';
@@ -273,6 +280,7 @@ describe('Lists', () => {
       ].join('\n'),
     );
   });
+
   test('simple list', () => {
     // test_convert_with_simple_list
     const source = '{"items": [1, 2, 3]}';
@@ -289,6 +297,7 @@ describe('Lists', () => {
       ].join('\n'),
     );
   });
+
   test('mixed list', () => {
     // test_convert_with_mixed_list
     const source = '{"items": [1, "2", 3.5]}';
@@ -327,6 +336,7 @@ describe('Root lists', () => {
       ].join('\n'),
     );
   });
+
   test('multiple items', () => {
     // test_convert_root_list_multiple_items
     const source = `[
@@ -350,6 +360,7 @@ describe('Root lists', () => {
       ].join('\n'),
     );
   });
+
   test('multiple mixed items', () => {
     // test_convert_root_list_multiple_mixed_items
     const source = `[
@@ -377,6 +388,7 @@ describe('Root lists', () => {
       ].join('\n'),
     );
   });
+
   test('mixed non dict', () => {
     // test_convert_root_list_mixed_non_dict
     const source = '[1, 2.0, "3"]';
@@ -410,6 +422,7 @@ describe('Invalid key names', () => {
       ].join('\n'),
     );
   });
+
   test('nested', () => {
     // test_convert_with_invalid_key_names_nested
     const source = '{"invalid-key": {"id": 123}}';
@@ -458,6 +471,7 @@ describe('Dicts in lists', () => {
       ].join('\n'),
     );
   });
+
   test('of mixed dicts', () => {
     // test_convert_list_of_mixed_dicts
     const source = `{
@@ -493,7 +507,8 @@ describe('Dicts in lists', () => {
       ].join('\n'),
     );
   });
-  test('of repeated dicts different types combines', () => {
+
+  test('of repeated dicts different types combined', () => {
     // test_convert_list_of_repeated_dicts_different_types_combined
     const source = `{
       "dictList": [
@@ -536,6 +551,7 @@ describe('Optional', () => {
       ].join('\n'),
     );
   });
+
   test('not optional if multiple types with none', () => {
     // test_convert_not_optional_if_multiple_types_with_none
     const source = '[1, 2, null, 3.0, 4.0, null, 5, 6]';
@@ -550,6 +566,7 @@ describe('Optional', () => {
       ].join('\n'),
     );
   });
+
   test('optional combined dicts', () => {
     // test_convert_optional_combined_dicts
     const source = `{
@@ -594,6 +611,7 @@ describe('Imports', () => {
       ].join('\n'),
     );
   });
+
   test('adds imports with nested defs', () => {
     // test_convert_optionally_adds_imports_with_nested_defs
     const source = `{
@@ -620,6 +638,7 @@ describe('Imports', () => {
       ].join('\n'),
     );
   });
+
   test('with no typing imports', () => {
     // test_convert_imports_with_no_typing_imports
     const source = '{"id": 10, "value": "value"}';
@@ -636,6 +655,7 @@ describe('Imports', () => {
       ].join('\n'),
     );
   });
+
   test('with no typed dict', () => {
     // test_convert_imports_with_no_typed_dict
     const source = '[1, 2, 3]';

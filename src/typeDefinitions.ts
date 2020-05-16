@@ -47,12 +47,13 @@ class DefinitionBuilder {
     }
     return entry;
   }
-  private convertList(key: string, list: Array<Source>, itemName: string): MemberEntry {
-    const entry = new MemberEntry(key);
 
+  private convertList(typeName: string, list: Array<Source>): MemberEntry {
+    const entry = new MemberEntry('List');
     let idx = 0;
-    for (const item of list) {
-      const itemType = this.getType(item, `${itemName}${idx}`);
+
+    for (const element of list) {
+      const itemType = this.getType(element, `${typeName}${idx}`);
 
       entry.addSubMember(itemType);
       if (itemType instanceof DictEntry) {
@@ -64,8 +65,10 @@ class DefinitionBuilder {
 
     return entry;
   }
+
   private convertDict(typeName: string, dict: object): DictEntry {
     const entry = new DictEntry(typeName);
+
     for (const [key, value] of Object.entries(dict)) {
       let valueType = this.getType(value, key);
       if (valueType instanceof DictEntry) {
@@ -76,6 +79,7 @@ class DefinitionBuilder {
     }
     return entry;
   }
+
   private getType(item: Source, key: string): EntryType {
     if (item === null) {
       throw new Error('Unable to get type on null');
@@ -93,28 +97,7 @@ class DefinitionBuilder {
         return new MemberEntry('None');
       case Array:
         if (Array.isArray(item)) {
-          const dictEntryItems: DictEntry[] = [];
-          const memberEntryItems: MemberEntry[] = [];
-          let idx = 0;
-
-          for (const element of item) {
-            const itemType = this.getType(element, `${key}Item${idx}`);
-            if (itemType instanceof DictEntry) {
-              if (!dictEntryItems.some(listItemType => eqSet(listItemType.keys, itemType.keys))) {
-                dictEntryItems.push(itemType);
-                idx += 1;
-                if (itemType instanceof DictEntry) {
-                  this.addDefinition(itemType);
-                }
-              }
-            } else if (
-              memberEntryItems.find(elm => elm.toString() == itemType.toString()) == null
-            ) {
-              memberEntryItems.push(itemType);
-            }
-          }
-
-          return new MemberEntry('List', [...dictEntryItems, ...memberEntryItems]);
+          return this.convertList(`${key}Item`, item);
         }
       case Object:
         if (typeof item === 'object') {
@@ -131,7 +114,7 @@ class DefinitionBuilder {
     }
 
     if (Array.isArray(this.#source)) {
-      this.addDefinition(this.convertList('List', this.#source, `${this.#rootTypeName}Item`));
+      this.addDefinition(this.convertList(`${this.#rootTypeName}Item`, this.#source));
     } else if (typeof this.#source === 'object' && this.#source !== null) {
       this.addDefinition(
         this.convertDict(`${this.#rootTypeName}${this.#typePostfix}`, this.#source),
