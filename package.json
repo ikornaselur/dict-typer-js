@@ -1,5 +1,5 @@
 {
-  "name": "pytyper",
+  "name": "dict-typer",
   "version": "0.1.0",
   "description": "A JS port of the Python library dict-typer",
   "main": "dist/index.js",
