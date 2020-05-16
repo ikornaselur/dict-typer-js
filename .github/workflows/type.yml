@@ -1,0 +1,28 @@
+name: TypeScript type checking
+
+on: [push]
+
+jobs:
+  type_check:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-node@v1
+      with:
+        node-version: '12'
+
+    - name: Cache dependencies
+      uses: actions/cache@v1
+      id: cache
+      with:
+        path: ~/node_modules
+        key: deps-${{ hashFiles('**/yarn.lock') }}
+        restore-keys: |
+          deps-${{ hashFiles('**/yarn.lock') }}
+
+    - name: Install dependencies
+      run: yarn install
+      if: steps.cache.outputs.cache-hit != 'true'
+
+    - name: Type checking
+      run: yarn type
