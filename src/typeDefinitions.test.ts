@@ -602,12 +602,11 @@ describe('Imports', () => {
       "itemsList": [1, 2.0, "3"]
     }`;
 
+    // prettier-ignore
     expect(getTypeDefinitions(source, {showImports: false})).toBe(
       [
         'class Root(TypedDict):',
         '    itemsList: List[Union[float, int, str]]',
-        '    itemsTuple: Tuple[int]',
-        '    itemsSet: Set[Union[float, int]]',
       ].join('\n'),
     );
   });
@@ -629,7 +628,7 @@ describe('Imports', () => {
         '',
         '',
         'class Nest(TypedDict):',
-        '    itemsTuple: List[Union[List[Union[float, int]], int]]',
+        '    otherList: List[Union[List[Union[float, int]], int]]',
         '',
         '',
         'class Root(TypedDict):',
