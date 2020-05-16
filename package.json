@@ -1,16 +1,17 @@
 {
-  "name": "dict-typer",
+  "name": "pytyper",
   "version": "0.1.0",
   "description": "A JS port of the Python library dict-typer",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "author": "Axel <dict.typer@absalon.is>",
+  "author": "Axel <dev@absalon.is>",
   "license": "MIT",
   "scripts": {
     "test": "jest --verbose",
     "testw": "jest --verbose --watch",
     "lint": "eslint src/*",
-    "type": "tsc --project . --noEmit"
+    "type": "tsc --project . --noEmit",
+    "prepublish": "tsc"
   },
   "devDependencies": {
     "@types/jest": "^25.2.1",
