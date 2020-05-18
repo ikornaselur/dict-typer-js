@@ -21,6 +21,26 @@ describe('Basics', () => {
     ].join('\n'));
   });
 
+  test('with postfix', () => {
+    // test_convert_with_postfix
+    const source = `{
+      "id": 123,
+      "item": "value",
+      "progress": 0.71
+    }`;
+
+    // prettier-ignore
+    expect(getTypeDefinitions(source, {typePostfix: "Type"})).toBe([
+        "from typing_extensions import TypedDict",
+        "",
+        "",
+        "class RootType(TypedDict):",
+        "    id: int",
+        "    item: str",
+        "    progress: float",
+    ].join('\n'));
+  });
+
   test('base types', () => {
     // test_convert_base_types
     const source = `{
@@ -63,6 +83,18 @@ describe('Basics', () => {
         "    value: None",
       ].join('\n')
     );
+  });
+
+  it.each`
+    source     | expected
+    ${'"foo"'} | ${'str'}
+    ${'123'}   | ${'int'}
+    ${'10.0'}  | ${'float'}
+    ${'true'}  | ${'bool'}
+    ${'null'}  | ${'None'}
+  `('base root values', ({source, expected}) => {
+    // test_convert_base_root_values
+    expect(getTypeDefinitions(source)).toBe(`Root = ${expected}`);
   });
 });
 

@@ -6,7 +6,6 @@ import {Int, Float, Str, Bool, Null} from './baseTypes';
 
 class DefinitionBuilder {
   #definitions: DictEntry[];
-  #rootList: MemberEntry[];
   #rootTypeName: string;
   #typePostfix: string;
   #showImports: boolean;
@@ -19,32 +18,27 @@ class DefinitionBuilder {
     this.#typePostfix = typePostfix;
     this.#showImports = showImports;
     this.#definitions = [];
-    this.#rootList = [];
   }
 
-  private addDefinition(entry: EntryType): EntryType {
-    if (entry instanceof MemberEntry) {
-      this.#rootList.push(entry);
-    } else {
-      const dictsOnly = this.#definitions.filter(def => def instanceof DictEntry);
-      for (const definition of dictsOnly) {
-        if (eqSet(entry.keys, definition.keys)) {
-          definition.updateMembers(entry.members);
-          return definition;
-        }
-        if (entry.name === definition.name) {
-          let idx = 1;
-          let newName = `${entry.name}${idx}`;
-          const dictsNames = dictsOnly.map(d => d.name);
-          while (dictsNames.indexOf(newName) > -1) {
-            idx += 1;
-            newName = `${entry.name}${idx}`;
-          }
-          entry.name = newName;
-        }
+  private addDefinition(entry: DictEntry): DictEntry {
+    const dictsOnly = this.#definitions.filter(def => def instanceof DictEntry);
+    for (const definition of dictsOnly) {
+      if (eqSet(entry.keys, definition.keys)) {
+        definition.updateMembers(entry.members);
+        return definition;
       }
-      this.#definitions.push(entry);
+      if (entry.name === definition.name) {
+        let idx = 1;
+        let newName = `${entry.name}${idx}`;
+        const dictsNames = dictsOnly.map(d => d.name);
+        while (dictsNames.indexOf(newName) > -1) {
+          idx += 1;
+          newName = `${entry.name}${idx}`;
+        }
+        entry.name = newName;
+      }
     }
+    this.#definitions.push(entry);
     return entry;
   }
 
@@ -113,17 +107,16 @@ class DefinitionBuilder {
       return this.#output;
     }
 
-    if (Array.isArray(this.#source)) {
-      this.addDefinition(this.convertList(`${this.#rootTypeName}Item`, this.#source));
-    } else if (typeof this.#source === 'object' && this.#source !== null) {
-      this.addDefinition(
-        this.convertDict(`${this.#rootTypeName}${this.#typePostfix}`, this.#source),
-      );
-    } else {
-      throw new Error('Unable to build output for given source');
-    }
-
     this.#output = '';
+
+    const sourceType = this.getType(this.#source, this.#rootTypeName);
+    let rootItem = null;
+
+    if (sourceType instanceof DictEntry) {
+      this.addDefinition(sourceType);
+    } else {
+      rootItem = sourceType;
+    }
 
     if (this.#showImports) {
       let typingImports: Set<string> = new Set([]);
@@ -135,8 +128,8 @@ class DefinitionBuilder {
         }
         typingImports = new Set([...typingImports, ...definition.getImports()]);
       }
-      if (this.#rootList.length > 0) {
-        typingImports = new Set([...typingImports, 'List', ...subMembersToImports(this.#rootList)]);
+      if (rootItem !== null) {
+        typingImports = new Set([...typingImports, ...subMembersToImports([rootItem])]);
       }
       if (typingImports.size > 0) {
         this.#output += [`from typing import ${[...typingImports].sort().join(', ')}`, '', ''].join(
@@ -153,7 +146,7 @@ class DefinitionBuilder {
       .map(d => d.toString())
       .join('\n\n\n');
 
-    if (this.#rootList.length > 0) {
+    if (!(sourceType instanceof DictEntry)) {
       if (this.#output.length > 0) {
         this.#output += '\n';
         if (this.#definitions.length > 0) {
@@ -161,7 +154,7 @@ class DefinitionBuilder {
         }
       }
       this.#output += `${this.#rootTypeName}${this.#typePostfix} = ${subMembersToString([
-        ...this.#rootList,
+        sourceType,
       ])}`;
     }
 
