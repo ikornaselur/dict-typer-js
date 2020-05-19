@@ -29,7 +29,7 @@ def get_py_tests(path: str) -> Dict[str, List[str]]:
 
 def get_js_tests(path: str) -> Dict[str, List[str]]:
     pattern = re.compile(
-        r"test\('([\w\s]+)', \(\) => {\n\s+// (test_[a-z_]+)", re.MULTILINE
+        r"(?:test|`)\('([\w\s]+)', \(.*\) => {\n\s+// (test_[a-z_]+)", re.MULTILINE
     )
     tests = {}
 
@@ -85,7 +85,7 @@ def run() -> None:
                 covered += 1
 
         char = {"green": "+", "yellow": "/", "red": "-"}[file_colour]
-        click.secho(f"[{char}] {py_test_file}", fg=file_colour)
+        click.secho(f"{py_test_file}", fg=file_colour)
         for output in to_output:
             click.secho(**output)  # type: ignore
 
