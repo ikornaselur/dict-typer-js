@@ -59,7 +59,7 @@ def run() -> None:
         file_colour = "green"
         for py_test_name in py_test_names:
             if py_test_name in IGNORED:
-                to_output.append({"message": f" |  {py_test_name}", "fg": "yellow"})
+                to_output.append({"message": f"[/] |  {py_test_name}", "fg": "yellow"})
                 ignored += 1
                 if file_colour == "green":
                     file_colour = "yellow"
@@ -72,26 +72,27 @@ def run() -> None:
                         break
             if covered_by is None:
                 file_colour = "red"
-                to_output.append({"message": f" |  {py_test_name}", "fg": "red"})
+                to_output.append({"message": f"[-] |  {py_test_name}", "fg": "red"})
                 missing += 1
             else:
-                to_output.append({"message": f" |  {py_test_name}", "fg": "green"})
+                to_output.append({"message": f"[+] |  {py_test_name}", "fg": "green"})
                 to_output.append(
                     {
-                        "message": f" |  |  {covered_by[0]}:'{covered_by[1]}'",
+                        "message": f"[+] |  |  {covered_by[0]}:'{covered_by[1]}'",
                         "fg": "green",
                     }
                 )
                 covered += 1
 
-        click.secho(f"{py_test_file}", fg=file_colour)
+        char = {"green": "+", "yellow": "/", "red": "-"}[file_colour]
+        click.secho(f"[{char}] {py_test_file}", fg=file_colour)
         for output in to_output:
             click.secho(**output)  # type: ignore
 
     click.echo()
     click.secho(f"[+] Covered: {covered}", fg="green")
-    click.secho(f"[+] Ignored: {ignored}", fg="yellow")
-    click.secho(f"[+] Missing: {missing}", fg="red")
+    click.secho(f"[/] Ignored: {ignored}", fg="yellow")
+    click.secho(f"[-] Missing: {missing}", fg="red")
 
 
 if __name__ == "__main__":
