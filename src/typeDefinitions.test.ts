@@ -9,16 +9,39 @@ describe('Basics', () => {
       "progress": 0.71
     }`;
 
-    // prettier-ignore
-    expect(getTypeDefinitions(source)).toBe([
-        "from typing_extensions import TypedDict",
-        "",
-        "",
-        "class Root(TypedDict):",
-        "    id: int",
-        "    item: str",
-        "    progress: float",
-    ].join('\n'));
+    expect(getTypeDefinitions(source)).toBe(
+      [
+        'from typing_extensions import TypedDict',
+        '',
+        '',
+        'class Root(TypedDict):',
+        '    id: int',
+        '    item: str',
+        '    progress: float',
+      ].join('\n'),
+    );
+  });
+
+  test('simple json force alternative', () => {
+    // test_convert_simple_json_forced_alternative
+    const source = `{
+      "id": 123,
+      "item": "value",
+      "progress": 0.71
+    }`;
+
+    expect(getTypeDefinitions(source, {forceAlternative: true})).toBe(
+      [
+        'from typing_extensions import TypedDict',
+        '',
+        '',
+        'Root = TypedDict("Root", {',
+        '    "id": int,',
+        '    "item": str,',
+        '    "progress": float,',
+        '})',
+      ].join('\n'),
+    );
   });
 
   test('with postfix', () => {
@@ -29,16 +52,17 @@ describe('Basics', () => {
       "progress": 0.71
     }`;
 
-    // prettier-ignore
-    expect(getTypeDefinitions(source, {typePostfix: "Type"})).toBe([
-        "from typing_extensions import TypedDict",
-        "",
-        "",
-        "class RootType(TypedDict):",
-        "    id: int",
-        "    item: str",
-        "    progress: float",
-    ].join('\n'));
+    expect(getTypeDefinitions(source, {typePostfix: 'Type'})).toBe(
+      [
+        'from typing_extensions import TypedDict',
+        '',
+        '',
+        'class RootType(TypedDict):',
+        '    id: int',
+        '    item: str',
+        '    progress: float',
+      ].join('\n'),
+    );
   });
 
   test('base types', () => {
@@ -52,36 +76,36 @@ describe('Basics', () => {
       "listType": [1, 2, 3]
     }`;
 
-    // prettier-ignore
-    expect(getTypeDefinitions(source)).toBe([
-        "from typing import List",
-        "",
-        "from typing_extensions import TypedDict",
-        "",
-        "",
-        "class Root(TypedDict):",
-        "    boolType: bool",
-        "    floatType: float",
-        "    intType: int",
-        "    strType: str",
-        "    noneType: None",
-        "    listType: List[int]",
-    ].join('\n'));
+    expect(getTypeDefinitions(source)).toBe(
+      [
+        'from typing import List',
+        '',
+        'from typing_extensions import TypedDict',
+        '',
+        '',
+        'class Root(TypedDict):',
+        '    boolType: bool',
+        '    floatType: float',
+        '    intType: int',
+        '    strType: str',
+        '    noneType: None',
+        '    listType: List[int]',
+      ].join('\n'),
+    );
   });
 
   test('convert none', () => {
     // test_convert_none
     const source = '{"value": null}';
 
-    // prettier-ignore
     expect(getTypeDefinitions(source)).toBe(
       [
-        "from typing_extensions import TypedDict",
-        "",
-        "",
-        "class Root(TypedDict):",
-        "    value: None",
-      ].join('\n')
+        'from typing_extensions import TypedDict',
+        '',
+        '',
+        'class Root(TypedDict):',
+        '    value: None',
+      ].join('\n'),
     );
   });
 
@@ -103,15 +127,14 @@ describe('Dicts', () => {
     // test_convert_empty_root_dict
     const source = '{}';
 
-    // prettier-ignore
     expect(getTypeDefinitions(source)).toBe(
       [
-        "from typing_extensions import TypedDict",
-        "",
-        "",
-        "class Root(TypedDict):",
-        "    pass",
-      ].join('\n')
+        'from typing_extensions import TypedDict',
+        '',
+        '',
+        'class Root(TypedDict):',
+        '    pass',
+      ].join('\n'),
     );
   });
 
