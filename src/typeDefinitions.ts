@@ -98,13 +98,9 @@ class DefinitionBuilder {
       case Null:
         return new MemberEntry('None');
       case Array:
-        if (Array.isArray(item)) {
-          return this.convertList(`${key}Item`, item);
-        }
+        return this.convertList(`${key}Item`, item as Source[]);
       case Object:
-        if (typeof item === 'object') {
-          return this.convertDict(`${keyToClassName(key)}${this.#typePostfix}`, item);
-        }
+        return this.convertDict(`${keyToClassName(key)}${this.#typePostfix}`, item as object);
       default:
         throw `Can't getType for ${item}`;
     }
