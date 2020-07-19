@@ -6,6 +6,7 @@ describe('Basics', () => {
     const source = `{
       "id": 123,
       "item": "value",
+      "empty": "",
       "progress": 0.71
     }`;
 
@@ -17,6 +18,7 @@ describe('Basics', () => {
         'class Root(TypedDict):',
         '    id: int',
         '    item: str',
+        '    empty: str',
         '    progress: float',
       ].join('\n'),
     );

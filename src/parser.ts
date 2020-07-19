@@ -62,7 +62,7 @@ class Parser {
    */
   parseString(): Str | undefined {
     const value = this.parseStringRaw();
-    if (value) {
+    if (value !== undefined) {
       return new Str(value);
     }
   }
