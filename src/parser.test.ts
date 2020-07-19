@@ -16,6 +16,7 @@ describe('Parser', () => {
 
   test('Basic elements parsing', () => {
     expect(parse('"foo"')).toBeInstanceOf(Str);
+    expect(parse('""')).toBeInstanceOf(Str);
     expect(parse('10')).toBeInstanceOf(Int);
     expect(parse('12.2')).toBeInstanceOf(Float);
     expect(parse('null')).toBeInstanceOf(Null);
