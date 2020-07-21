@@ -154,7 +154,7 @@ class Parser {
       return value;
     }
   }
-  parseObject(): object | undefined {
+  parseObject(): Record<string, unknown> | undefined {
     if (this.#str[this.#idx] === '{') {
       this.#idx++;
       this.skipWhitespace();

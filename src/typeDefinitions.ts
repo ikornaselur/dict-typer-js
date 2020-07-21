@@ -75,7 +75,7 @@ class DefinitionBuilder {
     return this.#nameMap[typeName] || typeName;
   }
 
-  private convertDict(typeName: string, dict: object): DictEntry {
+  private convertDict(typeName: string, dict: Record<string, Source>): DictEntry {
     const entry = new DictEntry(this.getName(typeName), {}, this.#forceAlternative);
 
     for (const [key, value] of Object.entries(dict)) {
@@ -107,7 +107,10 @@ class DefinitionBuilder {
       case Array:
         return this.convertList(`${key}Item`, item as Source[]);
       case Object:
-        return this.convertDict(`${keyToClassName(key)}${this.#typePostfix}`, item as object);
+        return this.convertDict(
+          `${keyToClassName(key)}${this.#typePostfix}`,
+          item as Record<string, Source>,
+        );
       default:
         throw `Can't getType for ${item}`;
     }
