@@ -11,6 +11,7 @@ class DefinitionBuilder {
   #showImports: boolean;
   #forceAlternative: boolean;
   #source: Source;
+  #nameMap: Record<string, string>;
   #output?: string;
 
   constructor(
@@ -19,6 +20,7 @@ class DefinitionBuilder {
     typePostfix = '',
     showImports = true,
     forceAlternative = false,
+    nameMap = {},
   ) {
     this.#source = source;
     this.#rootTypeName = rootTypeName;
@@ -26,6 +28,7 @@ class DefinitionBuilder {
     this.#showImports = showImports;
     this.#forceAlternative = forceAlternative;
     this.#definitions = [];
+    this.#nameMap = nameMap;
   }
 
   private addDefinition(entry: DictEntry): DictEntry {
@@ -68,8 +71,12 @@ class DefinitionBuilder {
     return entry;
   }
 
+  private getName(typeName: string): string {
+    return this.#nameMap[typeName] || typeName;
+  }
+
   private convertDict(typeName: string, dict: object): DictEntry {
-    const entry = new DictEntry(typeName, {}, this.#forceAlternative);
+    const entry = new DictEntry(this.getName(typeName), {}, this.#forceAlternative);
 
     for (const [key, value] of Object.entries(dict)) {
       let valueType = this.getType(value, key);
@@ -168,7 +175,13 @@ class DefinitionBuilder {
 
 export const getTypeDefinitions = (
   source: string,
-  {rootTypeName = 'Root', typePostfix = '', showImports = true, forceAlternative = false} = {},
+  {
+    rootTypeName = 'Root',
+    typePostfix = '',
+    showImports = true,
+    forceAlternative = false,
+    nameMap = {},
+  } = {},
 ): string => {
   const parsed = parse(source);
   const builder = new DefinitionBuilder(
@@ -177,6 +190,7 @@ export const getTypeDefinitions = (
     typePostfix,
     showImports,
     forceAlternative,
+    nameMap,
   );
   return builder.buildOutput();
 };
