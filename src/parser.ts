@@ -1,5 +1,4 @@
-import {Int, Float, Str, Bool, Null} from './baseTypes';
-import {Source} from './types';
+import {Bool, Dict, Float, Int, List, Null, Source, Str} from './types';
 
 const isHexadecimal = (char: string): boolean => {
   return (char >= '0' && char <= '9') || (char.toLowerCase() >= 'a' && char.toLowerCase() <= 'f');
@@ -154,12 +153,12 @@ class Parser {
       return value;
     }
   }
-  parseObject(): object | undefined {
+  parseObject(): Dict | undefined {
     if (this.#str[this.#idx] === '{') {
       this.#idx++;
       this.skipWhitespace();
 
-      const result: {[index: string]: Source} = {};
+      const result: Dict = {};
 
       let initial = true;
       while (this.#str[this.#idx] !== '}') {
@@ -185,7 +184,7 @@ class Parser {
       return result;
     }
   }
-  parseArray(): Source[] | undefined {
+  parseArray(): List | undefined {
     if (this.#str[this.#idx] === '[') {
       this.#idx++;
       this.skipWhitespace();

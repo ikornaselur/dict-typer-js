@@ -24,6 +24,44 @@ describe('Basics', () => {
     );
   });
 
+  test('with a name map', () => {
+    // test_convert_with_a_name_map
+    const source = `{
+      "id": 123,
+      "item": "value",
+      "things": [{"foo": "bar"}, {"baz": "qux"}]
+    }`;
+
+    const nameMap = {
+      Root: 'Source',
+      ThingsItem0: 'Foo',
+      ThingsItem1: 'Baz',
+      NotExisting: 'DoesntMatter',
+    };
+
+    expect(getTypeDefinitions(source, {nameMap})).toBe(
+      [
+        'from typing import List, Union',
+        '',
+        'from typing_extensions import TypedDict',
+        '',
+        '',
+        'class Foo(TypedDict):',
+        '    foo: str',
+        '',
+        '',
+        'class Baz(TypedDict):',
+        '    baz: str',
+        '',
+        '',
+        'class Source(TypedDict):',
+        '    id: int',
+        '    item: str',
+        '    things: List[Union[Baz, Foo]]',
+      ].join('\n'),
+    );
+  });
+
   test('simple json force alternative', () => {
     // test_convert_simple_json_forced_alternative
     const source = `{
