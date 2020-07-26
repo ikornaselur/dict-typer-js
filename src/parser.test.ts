@@ -1,5 +1,5 @@
 import {parse} from './parser';
-import {Int, Float, Str, Bool, Null} from './baseTypes';
+import {Int, Float, Str, Bool, Null} from './types';
 
 describe('Parser', () => {
   test('Basic object parsing', () => {

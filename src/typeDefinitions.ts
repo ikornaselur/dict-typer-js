@@ -1,8 +1,7 @@
 import {DictEntry, MemberEntry, memberSort} from './models';
-import {Source, EntryType} from './types';
 import {subMembersToString, subMembersToImports, keyToClassName, eqSet} from './utils';
 import {parse} from './parser';
-import {Int, Float, Str, Bool, Null} from './baseTypes';
+import {Int, Float, Str, Bool, Null, Dict, List, Source, EntryType} from './types';
 
 class DefinitionBuilder {
   #definitions: DictEntry[];
@@ -53,7 +52,7 @@ class DefinitionBuilder {
     return entry;
   }
 
-  private convertList(typeName: string, list: Array<Source>): MemberEntry {
+  private convertList(typeName: string, list: List): MemberEntry {
     const entry = new MemberEntry('List');
     let idx = 0;
 
@@ -75,7 +74,7 @@ class DefinitionBuilder {
     return this.#nameMap[typeName] || typeName;
   }
 
-  private convertDict(typeName: string, dict: Record<string, Source>): DictEntry {
+  private convertDict(typeName: string, dict: Dict): DictEntry {
     const entry = new DictEntry(this.getName(typeName), {}, this.#forceAlternative);
 
     for (const [key, value] of Object.entries(dict)) {
@@ -105,12 +104,9 @@ class DefinitionBuilder {
       case Null:
         return new MemberEntry('None');
       case Array:
-        return this.convertList(`${key}Item`, item as Source[]);
+        return this.convertList(`${key}Item`, item as List);
       case Object:
-        return this.convertDict(
-          `${keyToClassName(key)}${this.#typePostfix}`,
-          item as Record<string, Source>,
-        );
+        return this.convertDict(`${keyToClassName(key)}${this.#typePostfix}`, item as Dict);
       default:
         throw `Can't getType for ${item}`;
     }
